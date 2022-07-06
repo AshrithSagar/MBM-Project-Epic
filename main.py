@@ -33,7 +33,7 @@ import scipy
 #----------------------------------------
 def dipeptide_matches(sequence):
 	"""Returns whether a dipeptide is present or not"""
-	matches = re.search(r"(.)\1+", str(sequence))
+	matches = re.search(r"(.)\1", str(sequence))
 	return matches
 
 #========================================
@@ -54,7 +54,7 @@ def intein_matches(sequence):
 
 #========================================
 def __main__():
-	INPUT = "HHHHHDAASDLKJASD" # Peptide sequence here.
+	INPUT = "HHHDAASDLKJASD" # Peptide sequence here.
 	
 	print(dipeptide_matches(INPUT))
 
