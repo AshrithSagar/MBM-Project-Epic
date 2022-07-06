@@ -41,12 +41,19 @@ def dipeptide_matches(sequence):
 # Intein sequences.
 #----------------------------------------
 def intein_matches(sequence):
-	SOURCE_GROUP = {} # Put the source as a dictionary, preferably.
+	inteins = ["CRAZY_SEQUENCE", "ANOTHER_SEQUENCE"] # Put the source as a dictionary or an array, preferably.
+
+	for intein in inteins:
+		match = str(sequence).find(intein)
+		if match:
+			return False
+		else:
+			return True
 
 #========================================
 # Cleavage sites.
 #----------------------------------------
-# [TODO]
+# [TODO] Possibly skipped, for now.
 
 #========================================
 # Charge criterion
@@ -56,8 +63,9 @@ def intein_matches(sequence):
 #========================================
 def __main__():
 	INPUT = "HHHDAASDLKJASD" # Peptide sequence here.
-	
-	print(dipeptide_matches(INPUT))
+
+	print("Dipeptides?: " + str(dipeptide_matches(INPUT)))
+	print("Inteins?: " + str(intein_matches(INPUT)))
 
 #----------------------------------------
 __main__()
