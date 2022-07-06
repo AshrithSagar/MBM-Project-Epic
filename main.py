@@ -11,22 +11,23 @@ import scipy
 # Alanine scan.
 #----------------------------------------
 # [TODO]
+# 
 
 #========================================
 # Groups
-# AA_GROUPS = {
-# 	'aliphatic' : ["G", "A", "V", "L", "I", "P"]
-# 	'polar neutral' : ["S", "T"],
-# 	'amide' : ["N", "Q"],
-# 	'sulfur-containing' : ["C", "M"],
-# 	'aromatic' : ["F", "Y", "W"],
-# 	'anionic' : ["D", "E"],
-# 	'cationic' : ["H", "K", "R"],
-# 	'hydrophobic' : ["V", "I", "L", "F", "W", "Y", "M"],
-# 	'hydrophilic' : ["S", "T", "H", "N", "Q", "E", "D", "K", "R"],
-# 	'positively-charged' : ["K", "R", "H"],
-# 	'negatively-charged' : ["D", "E"]
-# }
+AA_GROUPS = {
+	'aliphatic' : ["G", "A", "V", "L", "I", "P"],
+	'polar neutral' : ["S", "T"],
+	'amide' : ["N", "Q"],
+	'sulfur-containing' : ["C", "M"],
+	'aromatic' : ["F", "Y", "W"],
+	'anionic' : ["D", "E"],
+	'cationic' : ["H", "K", "R"],
+	'hydrophobic' : ["V", "I", "L", "F", "W", "Y", "M"],
+	'hydrophilic' : ["S", "T", "H", "N", "Q", "E", "D", "K", "R"],
+	'positively-charged' : ["K", "R", "H"],
+	'negatively-charged' : ["D", "E"]
+}
 
 #========================================
 # Dipeptide filter.
