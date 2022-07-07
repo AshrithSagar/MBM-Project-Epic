@@ -14,7 +14,7 @@ import scipy
 
 #========================================
 # Groups
-def groups_check(sequence, replacement):
+def groups_check(sequence, mutations):
 	AA_GROUPS = {
 		'polar_uncharged': ['S', 'T', 'C', 'P', 'N', 'Q'],
 		'positively_charged': ['K', 'R', 'H'],
@@ -23,31 +23,36 @@ def groups_check(sequence, replacement):
 		'nonpolar_aromatic': ['F', 'Y', 'W']
 	}
 	sequence = str(sequence)
-	replacement = str(replacement)
-	sequences = [] # The input for the next iteration.
+	mutated_sequences = [] # The inputs for the next iteration.
 
-	# Decode the replacement format.
-	replacements = {
-		'wild_type_AA': re.match(r'^[A-Z]', replacement),
-		'position_of_AA': re.match(r'[0-9]+', replacement),
-		'mutant_type_AA': re.match(r'[A-Z]$', replacement)
-	}
-	for element in replacements.values():
-		element = element.group(0) if element is not None else element
+	for mutation in mutations:
+		mutation = str(mutation)
 
-	# Replace the mutation with all possibilities within the group, by recognising its group.
-	for types in AA_GROUPS.keys():
-		if replacements['mutant_type_AA'] in AA_GROUPS[types]:
-			for AA in AA_GROUPS[types]:
-				print(AA)
-				new_sequence = sequence.copy()
-				new_sequence[replacements['position_of_AA']] = AA
-				sequences.append(new_sequence)
+		# Decode the replacement format.
+		replacement = {
+			'wild_type_AA': re.match(r'^[A-Z]', mutation),
+			'position_of_AA': re.match(r'[0-9]+', mutation),
+			'mutant_type_AA': re.match(r'[A-Z]$', mutation)
+		}
+		for element in replacement.values():
+			element = element.group(0) if element is not None else element
+		print(replacement)
 
-	# Random sampling through Monte-Carlo.
-	# [TODO]
+		# Replace the mutation with all possibilities within the group,
+		# by recognising its group.
+		for types in AA_GROUPS.keys():
+			if replacement['mutant_type_AA'] in AA_GROUPS[types]:
+				print("The mutation is of type: ", types)
+				for AA in AA_GROUPS[types]:
+					print("Mutating ", replacement['wild_type_AA'], "with", AA)
+					new_sequence = sequence.copy()
+					new_sequence[replacement['position_of_AA']] = AA
+					mutated_sequences.append(new_sequence)
 
-	return sequences
+		# Random sampling through Monte-Carlo.
+		# [TODO]
+
+	return mutated_sequences
 
 #========================================
 # Dipeptide filter.
@@ -62,7 +67,8 @@ def dipeptide_matches(sequence):
 #----------------------------------------
 # SKIPPED, FOR NOW.
 def intein_matches(sequence):
-	inteins = ["CRAZY_SEQUENCE", "ANOTHER_SEQUENCE"] # Put the source as a dictionary or an array, preferably.
+	inteins = ["CRAZY_SEQUENCE", "ANOTHER_SEQUENCE"] 
+	# Put the source as a dictionary or an array, preferably.
 
 	for intein in inteins:
 		match = str(sequence).find(intein)
@@ -82,7 +88,9 @@ def intein_matches(sequence):
 def __main__():
 	INPUT = "HHHDAASDLKJASD" # Peptide sequence here.
 
-	print("Groups filter: " + str(groups_check(INPUT, 'A2G')))
+	print("Groups filter: " + str(groups_check(INPUT, 
+		['R2K', 'A7G'] # Enter the mutations required here.
+		)))
 	print("Dipeptides?: " + str(dipeptide_matches(INPUT)))
 	print("Inteins?: " + str(intein_matches(INPUT)))
 
