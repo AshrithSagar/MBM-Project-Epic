@@ -34,22 +34,27 @@ def groups_check(sequence, mutations):
 		replacement = {
 			'wild_type_AA': re.findall(r'^(\w)', mutation)[0],
 			'position_of_AA': re.findall(r'(\d)+', mutation)[0],
-			'mutant_type_AA': re.findall(r'(\w)$', mutation)[0],
+			'mutant_type_AA': re.findall(r'(\w)$', mutation)[0] # Ignored currently.
 		}
 
 		# Replace the mutation with all possibilities within the group,
 		# by recognising its group.
 		for types in AA_GROUPS.keys():
-			if replacement['mutant_type_AA'] in AA_GROUPS[types]:
-				print("The mutation is of type: ", types)
+			if replacement['wild_type_AA'] in AA_GROUPS[types]:
+				print("The mutation is of type:", types)
 				for AA in AA_GROUPS[types]:
-					print("Mutating", replacement['wild_type_AA'], "with", AA)
-					new_sequence = sequence
-					new_sequence.replace(AA, replacement['position_of_AA'])
-					mutated_sequences.append(new_sequence)
+					if not AA is replacement['wild_type_AA']:
+						print("Mutating", replacement['wild_type_AA'], "with", AA)
+						new_sequence = sequence
+						new_sequence.replace(AA, replacement['position_of_AA'])
+						mutated_sequences.append(new_sequence)
 
-		# Random sampling through Monte-Carlo.
-		# [TODO]
+		# Random sampling
+			# Through Monte-Carlo.
+				# [TODO]
+
+			# The approach using random.
+		# mutated_sequences = random.shuffle(mutated_sequences)[0:5]
 
 	return mutated_sequences
 
@@ -96,7 +101,7 @@ def __main__():
 	INPUT = "ERCYDNTAGTSYVVGETWEKPYQGWMIVDCTCLGEGSGRITCT" # Peptide sequence here.
 
 	print("Groups filtered: " + str(groups_check(INPUT, 
-		['R2K', 'W20N'] # Enter the mutations required here.
+		['R2', 'W20'] # Enter the mutations required here.
 		)))
 	print("Dipeptides filtered: " + str(dipeptide_matches(INPUT)))
 	print("Inteins?: " + str(intein_matches(INPUT)))
