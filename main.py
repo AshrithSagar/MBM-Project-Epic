@@ -56,10 +56,18 @@ def groups_check(sequence, mutations):
 #========================================
 # Dipeptide filter.
 #----------------------------------------
-def dipeptide_matches(sequence):
+def dipeptide_match(sequence):
 	"""Returns whether a dipeptide is present or not"""
 	matches = re.search(r"(.)\1", str(sequence))
-	return matches
+	return bool(matches)
+
+def dipeptide_matches(sequences):
+	"""Filters out and returns the non-dipeptide sequences"""
+	new_sequences = sequences
+	for sequence in sequences:
+		if dipeptide_match(sequence):
+			new_sequences.pop(sequence)
+	return new_sequences
 
 #========================================
 # Intein sequences.
@@ -85,12 +93,12 @@ def intein_matches(sequence):
 
 #========================================
 def __main__():
-	INPUT = "HHHDAASDLKJASD" # Peptide sequence here.
+	INPUT = "ERCYDNTAGTSYVVGETWEKPYQGWMIVDCTCLGEGSGRITCT" # Peptide sequence here.
 
-	print("Groups filter: " + str(groups_check(INPUT, 
-		['R2K', 'A7G'] # Enter the mutations required here.
+	print("Groups filtered: " + str(groups_check(INPUT, 
+		['R2K', 'W20N'] # Enter the mutations required here.
 		)))
-	print("Dipeptides?: " + str(dipeptide_matches(INPUT)))
+	print("Dipeptides filtered: " + str(dipeptide_matches(INPUT)))
 	print("Inteins?: " + str(intein_matches(INPUT)))
 
 #----------------------------------------
