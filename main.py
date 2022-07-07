@@ -31,14 +31,14 @@ def groups_check(sequence, replacement):
 		'position_of_AA': re.match(r'[0-9]+', replacement),
 		'mutant_type_AA': re.match(r'[A-Z]$', replacement)
 	}
-
 	for element in replacements.values():
 		element = element.group(0) if element is not None else element
 
 	for types in AA_GROUPS.keys():
-		for AA in AA_GROUPS[types]:
-			pass
-			# [TODO]
+		if replacements['mutant_type_AA'] in AA_GROUPS[types]:
+			print("YES")
+			for AA in AA_GROUPS[types]:
+				print(AA)
 	
 	return replacements
 
@@ -59,10 +59,7 @@ def intein_matches(sequence):
 
 	for intein in inteins:
 		match = str(sequence).find(intein)
-		if match:
-			return False
-		else:
-			return True
+		return not match
 
 #========================================
 # Cleavage sites.
@@ -78,7 +75,7 @@ def intein_matches(sequence):
 def __main__():
 	INPUT = "HHHDAASDLKJASD" # Peptide sequence here.
 
-	print("Groups filter: " + str(groups_check(INPUT, 'A345G')))
+	print("Groups filter: " + str(groups_check(INPUT, 'A2G')))
 	print("Dipeptides?: " + str(dipeptide_matches(INPUT)))
 	print("Inteins?: " + str(intein_matches(INPUT)))
 
