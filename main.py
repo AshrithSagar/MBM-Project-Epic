@@ -23,20 +23,19 @@ def groups_check(sequence, mutations):
 		'nonpolar_aromatic': ['F', 'Y', 'W']
 	}
 	sequence = str(sequence)
+	print("Original sequence:", sequence)
 	mutated_sequences = [] # The inputs for the next iteration.
 
 	for mutation in mutations:
 		mutation = str(mutation)
+		print("Mutation:", mutation)
 
 		# Decode the replacement format.
 		replacement = {
-			'wild_type_AA': re.match(r'^[A-Z]', mutation),
-			'position_of_AA': re.match(r'[0-9]+', mutation),
-			'mutant_type_AA': re.match(r'[A-Z]$', mutation)
+			'wild_type_AA': re.findall(r'^(\w)', mutation)[0],
+			'position_of_AA': re.findall(r'(\d)+', mutation)[0],
+			'mutant_type_AA': re.findall(r'(\w)$', mutation)[0],
 		}
-		for element in replacement.values():
-			element = element.group(0) if element is not None else element
-		print(replacement)
 
 		# Replace the mutation with all possibilities within the group,
 		# by recognising its group.
@@ -44,9 +43,9 @@ def groups_check(sequence, mutations):
 			if replacement['mutant_type_AA'] in AA_GROUPS[types]:
 				print("The mutation is of type: ", types)
 				for AA in AA_GROUPS[types]:
-					print("Mutating ", replacement['wild_type_AA'], "with", AA)
-					new_sequence = sequence.copy()
-					new_sequence[replacement['position_of_AA']] = AA
+					print("Mutating", replacement['wild_type_AA'], "with", AA)
+					new_sequence = sequence
+					new_sequence.replace(AA, replacement['position_of_AA'])
 					mutated_sequences.append(new_sequence)
 
 		# Random sampling through Monte-Carlo.
