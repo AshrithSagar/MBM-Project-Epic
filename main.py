@@ -24,8 +24,9 @@ def groups_check(sequence, replacement):
 	}
 	sequence = str(sequence)
 	replacement = str(replacement)
+	sequences = [] # The input for the next iteration.
 
-	# Decode the replacement format
+	# Decode the replacement format.
 	replacements = {
 		'wild_type_AA': re.match(r'^[A-Z]', replacement),
 		'position_of_AA': re.match(r'[0-9]+', replacement),
@@ -34,13 +35,19 @@ def groups_check(sequence, replacement):
 	for element in replacements.values():
 		element = element.group(0) if element is not None else element
 
+	# Replace the mutation with all possibilities within the group, by recognising its group.
 	for types in AA_GROUPS.keys():
 		if replacements['mutant_type_AA'] in AA_GROUPS[types]:
-			print("YES")
 			for AA in AA_GROUPS[types]:
 				print(AA)
-	
-	return replacements
+				new_sequence = sequence.copy()
+				new_sequence[replacements['position_of_AA']] = AA
+				sequences.append(new_sequence)
+
+	# Random sampling through Monte-Carlo.
+	# [TODO]
+
+	return sequences
 
 #========================================
 # Dipeptide filter.
