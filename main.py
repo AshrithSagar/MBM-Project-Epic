@@ -14,7 +14,7 @@ import scipy
 
 #========================================
 # Groups
-def groups(sequence, replacement):
+def groups_check(sequence, replacement):
 	AA_GROUPS = {
 		'polar_uncharged': ['S', 'T', 'C', 'P', 'N', 'Q'],
 		'positively_charged': ['K', 'R', 'H'],
@@ -22,13 +22,25 @@ def groups(sequence, replacement):
 		'nonpolar_aliphatic': ['G', 'A', 'V', 'L', 'M', 'J', 'I'],
 		'nonpolar_aromatic': ['F', 'Y', 'W']
 	}
+	sequence = str(sequence)
+	replacement = str(replacement)
 
 	# Decode the replacement format
+	replacements = {
+		'wild_type_AA': re.match(r'^[A-Z]', replacement),
+		'position_of_AA': re.match(r'[0-9]+', replacement),
+		'mutant_type_AA': re.match(r'[A-Z]$', replacement)
+	}
+
+	for element in replacements.values():
+		element = element.group(0) if element is not None else element
 
 	for types in AA_GROUPS.keys():
 		for AA in AA_GROUPS[types]:
-			print(AA)
-	return True
+			pass
+			# [TODO]
+	
+	return replacements
 
 #========================================
 # Dipeptide filter.
@@ -39,18 +51,18 @@ def dipeptide_matches(sequence):
 	return matches
 
 #========================================
-# SKIPPED, FOR NOW.
 # Intein sequences.
 #----------------------------------------
-# def intein_matches(sequence):
-# 	inteins = ["CRAZY_SEQUENCE", "ANOTHER_SEQUENCE"] # Put the source as a dictionary or an array, preferably.
+# SKIPPED, FOR NOW.
+def intein_matches(sequence):
+	inteins = ["CRAZY_SEQUENCE", "ANOTHER_SEQUENCE"] # Put the source as a dictionary or an array, preferably.
 
-# 	for intein in inteins:
-# 		match = str(sequence).find(intein)
-# 		if match:
-# 			return False
-# 		else:
-# 			return True
+	for intein in inteins:
+		match = str(sequence).find(intein)
+		if match:
+			return False
+		else:
+			return True
 
 #========================================
 # Cleavage sites.
@@ -66,7 +78,7 @@ def dipeptide_matches(sequence):
 def __main__():
 	INPUT = "HHHDAASDLKJASD" # Peptide sequence here.
 
-	print("Groups filter: " + str(groups(INPUT)))
+	print("Groups filter: " + str(groups_check(INPUT, 'A345G')))
 	print("Dipeptides?: " + str(dipeptide_matches(INPUT)))
 	print("Inteins?: " + str(intein_matches(INPUT)))
 
