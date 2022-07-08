@@ -32,21 +32,22 @@ def groups_check(sequence, mutations):
 
 		# Decode the replacement format.
 		replacement = {
-			'wild_type_AA': re.findall(r'^(\w)', mutation)[0],
-			'position_of_AA': re.findall(r'(\d)+', mutation)[0],
-			'mutant_type_AA': re.findall(r'(\w)$', mutation)[0] # Ignored currently.
+			'wild_type': re.findall(r'^(\w)', mutation)[0],
+			'position': re.findall(r'(\d)+', mutation)[0],
+			'mutant_type': re.findall(r'(\w)$', mutation)[0] # Ignored currently.
 		}
 
 		# Replace the mutation with all possibilities within the group,
 		# by recognising its group.
 		for types in AA_GROUPS.keys():
-			if replacement['wild_type_AA'] in AA_GROUPS[types]:
+			if replacement['wild_type'] in AA_GROUPS[types]:
 				print("The mutation is of type:", types)
 				for AA in AA_GROUPS[types]:
-					if not AA is replacement['wild_type_AA']:
-						print("Mutating", replacement['wild_type_AA'], "with", AA)
-						new_sequence = sequence
-						new_sequence.replace(AA, replacement['position_of_AA'])
+					if not AA is replacement['wild_type']:
+						position = int(replacement['position'])
+						print("Mutating", replacement['wild_type'],
+							"with", AA, "at", position)
+						new_sequence = sequence[:position] + AA + sequence[position+1:]
 						mutated_sequences.append(new_sequence)
 
 		# Random sampling
@@ -56,6 +57,7 @@ def groups_check(sequence, mutations):
 			# The approach using random.
 		# mutated_sequences = random.shuffle(mutated_sequences)[0:5]
 
+	print("Groups filtered: " + str(mutated_sequences))
 	return mutated_sequences
 
 #========================================
@@ -72,19 +74,22 @@ def dipeptide_matches(sequences):
 	for sequence in sequences:
 		if dipeptide_match(sequence):
 			new_sequences.pop(sequence)
+
+	print("Dipeptides filtered: " + str(new_sequences))
 	return new_sequences
 
 #========================================
 # Intein sequences.
 #----------------------------------------
 # SKIPPED, FOR NOW.
-def intein_matches(sequence):
-	inteins = ["CRAZY_SEQUENCE", "ANOTHER_SEQUENCE"] 
-	# Put the source as a dictionary or an array, preferably.
+# def intein_matches(sequence):
+# 	inteins = ["CRAZY_SEQUENCE", "ANOTHER_SEQUENCE"] 
+# 	# Put the source as a dictionary or an array, preferably.
 
-	for intein in inteins:
-		match = str(sequence).find(intein)
-		return not match
+# 	print("Inteins?: " + str(intein_matches(sequence)))
+# 	for intein in inteins:
+# 		match = str(sequence).find(intein)
+# 		return not match
 
 #========================================
 # Cleavage sites.
@@ -98,13 +103,14 @@ def intein_matches(sequence):
 
 #========================================
 def __main__():
-	INPUT = "ERCYDNTAGTSYVVGETWEKPYQGWMIVDCTCLGEGSGRITCT" # Peptide sequence here.
+	sequence = "ERCYDNTAGTSYVVGETWEKPYQGWMIVDCTCLGEGSGRITCT" # Peptide sequence here.
 
-	print("Groups filtered: " + str(groups_check(INPUT, 
+	sequences = groups_check(sequence, 
 		['R2', 'W20'] # Enter the mutations required here.
-		)))
-	print("Dipeptides filtered: " + str(dipeptide_matches(INPUT)))
-	print("Inteins?: " + str(intein_matches(INPUT)))
+	)
+	# sequences = dipeptide_matches(sequences)
+	# sequences = intein_matches(sequences)
+	print("Output sequences:", sequences)
 
 #----------------------------------------
 __main__()
