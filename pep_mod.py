@@ -3,9 +3,9 @@ Peptide modifications.
 """
 #========================================
 import random
+import argparse
 import re
 from scipy.stats import norm
-import matplotlib.pyplot as plt
 
 #========================================
 # Alanine scan.
@@ -127,6 +127,29 @@ def randomise_position(sequence):
 	# sequences = groups_check(sequence, mutation_positions)
 
 #========================================
+def format_input(contents):
+	sequence = contents[0]
+	given_mutations = contents[1:]
+	mutations = []
+
+	# Decode the replacement mutations format.
+	for mutation in given_mutations:
+		mutation = mutation.replace('\n', '') # Remove newlines.
+		
+		replacement = {
+			'wild_type': re.findall(r'^(\w)', mutation)[0],
+			'position': re.findall(r'(\d)+', mutation)[0],
+			'mutant_type': re.findall(r'(\w)$', mutation)[0] # Ignored currently.
+		}
+
+		# If only position is given.
+		if replacement['wild_type'] == None:
+			position = int(replacement['position'])
+			replacement['wild_type'] = sequence[position]
+
+		mutations.append(replacement)
+	print(mutations)
+
 def _main():
 	parser = argparse.ArgumentParser(description='Peptide modifications generator')
 	parser.add_argument('input_file', type=str, help='Input file [.txt]')
@@ -135,6 +158,7 @@ def _main():
 
 	with open(args.input_file, "r") as file:
 	    contents = file.readlines()
+	format_input(contents)
 
 	# If --output not specified, use input_file filename.
 	output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_sequences.txt")
@@ -142,7 +166,7 @@ def _main():
 	# sequences = groups_check(sequence, [])
 	# sequences = dipeptide_matches(sequences)
 	# sequences = intein_matches(sequences)
-	print("Output sequences:", sequences)
+	# print("Output sequences:", sequences)
 
 #----------------------------------------
 if __name__ == "__main__":
