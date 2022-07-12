@@ -51,11 +51,11 @@ def groups_check(sequence, mutations):
 						mutated_sequences.append(new_sequence)
 
 		# Random sampling
-			# Through Monte-Carlo.
-				# [TODO]
+		# Through Monte-Carlo.
+		# [TODO]
 
-			# The approach using random.
-		# mutated_sequences = random.shuffle(mutated_sequences)[0:5]
+		# The approach using random.
+		mutated_sequences = random.sample(mutated_sequences, 5)
 
 	print("Groups filtered: " + str(mutated_sequences))
 	return mutated_sequences
@@ -108,7 +108,7 @@ def __main__():
 	sequences = groups_check(sequence, 
 		['R2', 'W20'] # Enter the mutations required here.
 	)
-	# sequences = dipeptide_matches(sequences)
+	sequences = dipeptide_matches(sequences)
 	# sequences = intein_matches(sequences)
 	print("Output sequences:", sequences)
 
