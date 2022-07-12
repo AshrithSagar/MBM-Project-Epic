@@ -23,50 +23,52 @@ json_file = {
 }
 
 for line in contents:
-	value = line[0:9].strip()
+	value = line[0:6].strip()
 	try: json_file["Index"].append(int(value))
 	except: pass
 
-	value = line[10:14].strip()
+	value = line[6:13].strip()
 	try: json_file["Number"].append(int(value))
 	except: pass
 
-	value = line[15:20].strip()
+	value = line[13:18].strip()
 	try: json_file["Name"].append(str(value))
 	except: pass
 
-	value = line[21:25].strip()
+	value = line[18:24].strip()
 	try: json_file["Chain"].append(str(value))
 	except: pass
 
-	value = line[26:39].strip()
+	value = line[24:36].strip()
 	try: json_file["InterDG"].append(float(value))
 	except: pass
 
-	value = line[40:51].strip()
+	value = line[36:48].strip()
 	try: json_file["InterDDG"].append(float(value))
 	except: pass
 
-	value = line[52:60].strip()
+	value = line[48:60].strip()
 	try: json_file["NormTerDDG"].append(float(value))
 	except: pass
 
-	value = line[62:72].strip()
+	value = line[60:72].strip()
 	try: json_file["IntraDG"].append(float(value))
 	except: pass
 
-	value = line[73:85].strip()
+	value = line[72:84].strip()
 	try: json_file["IntraDDG"].append(float(value))
 	except: pass
 
-	value = line[86:101].strip()
+	value = line[84:96].strip()
 	try: json_file["NormTraDDG"].append(float(value))
 	except: pass
 
-	value = line[102:107].strip()
+	value = line[96:107].strip()
 	try: json_file["ChainAtoms"].append(int(value))
 	except: pass
 
+for element in json_file:
+	print(len(element))
 json_file = json.dumps(json_file)
 
 # Save as .json
@@ -76,10 +78,11 @@ file = open(file, "w")
 file.write(str(json_file))
 
 # Save as .csv
-file = sys.argv[1]
-json_file = file.replace(".bals", ".json")
-print(json_file)
-df = pd.read_json(json_file)
+# file = sys.argv[1]
+# json_file = file.replace(".bals", ".json")
+# print(json_file)
+# df = pd.read_json(json_file)
+
 # csv = df.to_csv()
 # file = file.replace(".bals", ".csv")
 # file = open(file, "w")
