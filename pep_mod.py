@@ -4,7 +4,6 @@ Peptide modifications.
 #========================================
 import random
 import re
-import numpy
 from scipy.stats import norm
 import matplotlib.pyplot as plt
 
