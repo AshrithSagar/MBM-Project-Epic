@@ -5,10 +5,16 @@ Peptide modifications.
 import random
 import re
 import numpy
-import scipy
+from scipy.stats import norm
+import matplotlib.pyplot as plt
 
 #========================================
 # Alanine scan.
+#----------------------------------------
+# [TODO]
+
+#========================================
+# DDG values
 #----------------------------------------
 # [TODO]
 
@@ -55,7 +61,8 @@ def groups_check(sequence, mutations):
 
 		# Random sampling
 		# Through Monte-Carlo.
-		# [TODO]
+		mean, var, skew, kurt = norm.stats(moments='mvsk')
+		
 
 		# The approach using random.
 		mutated_sequences = random.sample(mutated_sequences, 5)
