@@ -105,18 +105,20 @@ def dipeptide_matches(sequences):
 # [TODO]
 
 #========================================
-# Randomiser for positions
+# Randomiser for positions.
 #----------------------------------------
 def randomise_position(sequence):
 	"""Random positions"""
+	pass
 	# for mutation_position in range(len(sequence)):
 	# 	sequences = groups_check(sequence, [str(mutation_position)])
-	mutation_positions = range(0, len(sequence))
-	new_mutation_positions = []
-	for position in map(str, mutated_positions):
-		new_mutation_positions.append(str(position))
-	mutated_positions = new_mutation_positions
-	sequences = groups_check(sequence, mutation_positions)
+	
+	# mutation_positions = range(0, len(sequence))
+	# new_mutation_positions = []
+	# for position in map(str, mutated_positions):
+	# 	new_mutation_positions.append(str(position))
+	# mutated_positions = new_mutation_positions
+	# sequences = groups_check(sequence, mutation_positions)
 
 #========================================
 def __main__():
@@ -125,7 +127,7 @@ def __main__():
 	sequences = groups_check(sequence, 
 		['R2', 'W20'] # Enter the mutations required here.
 	)
-	sequences = dipeptide_matches(sequences)
+	# sequences = dipeptide_matches(sequences)
 	# sequences = intein_matches(sequences)
 	print("Output sequences:", sequences)
 
