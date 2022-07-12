@@ -2,90 +2,84 @@
 .bals to .csv converter
 """
 import sys
+import argparse
 import json
 import pandas as pd
 
-with open(sys.argv[1], "r") as file:
-    contents = file.readlines()
+def _main():
+	parser = argparse.ArgumentParser(description='.bals to .csv converter')
+	parser.add_argument('input_file', type=str, help='Input .bals file')
+	parser.add_argument('-o', '--output', dest='output_file', type=str, help='Output filename')
+	args = parser.parse_args()
 
-json_file = {
-	"Index": [],
-	"Number": [],
-	"Name": [],
-	"Chain": [],
-	"InterDG": [],
-	"InterDDG": [],
-	"NormTerDDG": [],
-	"IntraDG": [],
-	"IntraDDG": [],
-	"NormTraDDG": [],
-	"ChainAtoms": []
-}
+	with open(args.input_file, "r") as file:
+	    contents = file.readlines()
 
-for line in contents:
-	if line.startswith("#"): continue
+	json_contents = {
+		"Index": [], "Number": [], "Name": [], "Chain": [], 
+		"InterDG": [], "InterDDG": [], "NormTerDDG": [], 
+		"IntraDG": [], "IntraDDG": [], "NormTraDDG": [], 
+		"ChainAtoms": [] }
 
-	value = line[0:6].strip()
-	try: json_file["Index"].append(int(value))
-	except: pass
+	for line in contents:
+		if line.startswith("#"): continue
 
-	value = line[6:13].strip()
-	try: json_file["Number"].append(int(value))
-	except: pass
+		value = line[0:6].strip()
+		try: json_contents["Index"].append(int(value))
+		except: pass
 
-	value = line[13:18].strip()
-	try: json_file["Name"].append(str(value))
-	except: pass
+		value = line[6:13].strip()
+		try: json_contents["Number"].append(int(value))
+		except: pass
 
-	value = line[18:24].strip()
-	try: json_file["Chain"].append(str(value))
-	except: pass
+		value = line[13:18].strip()
+		try: json_contents["Name"].append(str(value))
+		except: pass
 
-	value = line[24:36].strip()
-	try: json_file["InterDG"].append(float(value))
-	except: pass
+		value = line[18:24].strip()
+		try: json_contents["Chain"].append(str(value))
+		except: pass
 
-	value = line[36:48].strip()
-	try: json_file["InterDDG"].append(float(value))
-	except: pass
+		value = line[24:36].strip()
+		try: json_contents["InterDG"].append(float(value))
+		except: pass
 
-	value = line[48:60].strip()
-	try: json_file["NormTerDDG"].append(float(value))
-	except: pass
+		value = line[36:48].strip()
+		try: json_contents["InterDDG"].append(float(value))
+		except: pass
 
-	value = line[60:72].strip()
-	try: json_file["IntraDG"].append(float(value))
-	except: pass
+		value = line[48:60].strip()
+		try: json_contents["NormTerDDG"].append(float(value))
+		except: pass
 
-	value = line[72:84].strip()
-	try: json_file["IntraDDG"].append(float(value))
-	except: pass
+		value = line[60:72].strip()
+		try: json_contents["IntraDG"].append(float(value))
+		except: pass
 
-	value = line[84:96].strip()
-	try: json_file["NormTraDDG"].append(float(value))
-	except: pass
+		value = line[72:84].strip()
+		try: json_contents["IntraDDG"].append(float(value))
+		except: pass
 
-	value = line[96:107].strip()
-	try: json_file["ChainAtoms"].append(int(value))
-	except: pass
+		value = line[84:96].strip()
+		try: json_contents["NormTraDDG"].append(float(value))
+		except: pass
 
-for element in json_file:
-	print(len(json_file[element]))
-json_file = json.dumps(json_file)
+		value = line[96:107].strip()
+		try: json_contents["ChainAtoms"].append(int(value))
+		except: pass
 
-# Save as .json
-file = sys.argv[1]
-file = file.replace(".bals", ".json")
-file = open(file, "w")
-file.write(str(json_file))
+	json_contents = json.dumps(json_contents)
 
-# Save as .csv
-# file = sys.argv[1]
-# json_file = file.replace(".bals", ".json")
-# print(json_file)
-# df = pd.read_json(json_file)
+	# Save as .json
+	json_file = args.input_file.replace(".bals", ".json")
+	file = open(json_file, "w")
+	file.write(str(json_contents))
 
-# csv = df.to_csv()
-# file = file.replace(".bals", ".csv")
-# file = open(file, "w")
-# file.write(csv.to_string())
+	# Save as .csv
+	with open(json_file, encoding='utf-8') as file:
+		df = pd.read_json(file)
+	csv_file = args.input_file.replace(".bals", ".csv")
+	df.to_csv(csv_file, encoding='utf-8', index=False)
+
+if __name__ == "__main__":
+	_main()
