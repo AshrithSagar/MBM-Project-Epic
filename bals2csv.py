@@ -23,6 +23,8 @@ json_file = {
 }
 
 for line in contents:
+	if line.startswith("#"): continue
+
 	value = line[0:6].strip()
 	try: json_file["Index"].append(int(value))
 	except: pass
@@ -68,7 +70,7 @@ for line in contents:
 	except: pass
 
 for element in json_file:
-	print(len(element))
+	print(len(json_file[element]))
 json_file = json.dumps(json_file)
 
 # Save as .json
