@@ -2,36 +2,19 @@
 Include pdb chains.
 """
 import sys
-import getopt
+import argparse
 
-def help():
-	print("Usage: ", argv[0], '-i <inputfile> -o <outputfile>')
+def _main():
+	parser = argparse.ArgumentParser(description='Modify pdb chains')
+	parser.add_argument('input_file', type=str)
+	parser.add_argument('chains', type=list)
+	parser.add_argument('-o', '--output', dest='outputfile', type=str, help='output filename')
+	args = parser.parse_args()
 
-def main(argv):
-	inputfile = ''
-	outputfile = ''
-	try:
-		opts, args = getopt.getopt(argv,"hi:o:",["input=","output="])
-		print(opts)
-		print(args)
-	except getopt.GetoptError:
-		help()
-		sys.exit(2)
-	for opt, arg in opts:
-		if opt == '-h':
-			help()
-			sys.exit()
-		elif opt in ("-i", "--input"):
-			inputfile = arg
-		elif opt in ("-o", "--output"):
-		 	outputfile = arg
-	print('Input file is ', inputfile)
-	print('Output file is ', outputfile)
+	with open(args.input_file, "r") as file:
+	    contents = file.readlines()
 
-	# with open(argv[1], "r") as file:
-	#     contents = file.readlines()
-
-	# chains = argv[3]
+	print (args.chains)
 	# new_file = ""
 
 	# chain = chains.pop(0)
@@ -52,4 +35,4 @@ def main(argv):
 	# file.write(str(new_file))
 
 if __name__ == "__main__":
-	main(sys.argv)
+	_main()
