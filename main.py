@@ -36,6 +36,9 @@ def groups_check(sequence, mutations):
 			'position': re.findall(r'(\d)+', mutation)[0],
 			'mutant_type': re.findall(r'(\w)$', mutation)[0] # Ignored currently.
 		}
+		if replacement['wild_type'] == None:
+			position = int(replacement['position'])
+			replacement['wild_type'] = sequence[position]
 
 		# Replace the mutation with all possibilities within the group,
 		# by recognising its group.
@@ -100,6 +103,14 @@ def dipeptide_matches(sequences):
 # Charge criterion
 #----------------------------------------
 # [TODO]
+
+#========================================
+# Randomiser for positions
+#----------------------------------------
+def randomise_position(sequence):
+	"""Random positions"""
+	for mutation_position in range(len(sequence)):
+		sequences = groups_check(sequence, [str(mutation_position)])
 
 #========================================
 def __main__():
