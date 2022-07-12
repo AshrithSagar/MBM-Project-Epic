@@ -6,33 +6,31 @@ import argparse
 
 def _main():
 	parser = argparse.ArgumentParser(description='Modify pdb chains')
-	parser.add_argument('input_file', type=str)
-	parser.add_argument('chains', type=list)
-	parser.add_argument('-o', '--output', dest='outputfile', type=str, help='output filename')
+	parser.add_argument('input_file', type=str, help='Input .pdb file')
+	parser.add_argument('chains', type=list, help='List of chains to be included')
+	parser.add_argument('-o', '--output', dest='output_file', type=str, help='Output filename')
 	args = parser.parse_args()
 
 	with open(args.input_file, "r") as file:
 	    contents = file.readlines()
+	
+	# If --output not specified, use input_file filename.
+	output_file = args.output_file if args.output_file else args.input_file.replace(".pdb", "_chains.pdb")
+	new_contents = []
 
-	print (args.chains)
-	# new_file = ""
+	chains = args.chains
+	chains.append("_") # So that last pop doesn't make the list empty.
+	chain = chains.pop(0)
 
-	# chain = chains.pop(0)
-	# for line in contents:
-	# 	if line.startswith("TER"):
-	# 		chain = chains.pop(0)
-	# 		continue
-	# 	if line.startswith("ATOM"):
-	# 		new_line = line[:21] + new_chain + line[23:] + "\n"
-	# 	else:
-	# 		new_line = line
-	# 	try: new_file.append(new_line)
-	# 	except: pass
-		
-	# # Save as .json
-	# file = argv[2]
-	# file = open(file, "w")
-	# file.write(str(new_file))
+	for line in contents:
+		if line.startswith("TER"): chain = chains.pop(0)
+		new_line = line if not line.startswith("ATOM") else line[:21] + chain + line[22:]
+		try: new_contents.append(new_line)
+		except: pass
+	
+	new_contents = "".join(new_contents)
+	file = open(output_file, "w")
+	file.write(new_contents)
 
 if __name__ == "__main__":
 	_main()
