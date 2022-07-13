@@ -15,9 +15,13 @@ from scipy.stats import norm
 def ddg_values(alascan_file):
 	"""Accepts .csv files: {Mutation, Position, DDG}."""
 	df = pd.read_csv(alascan_file)
+	df.set_index(['Index'])
 
 	ddg_array = df[['Number', 'Name', 'IntraDDG']]
-	print(ddg_array)
+	print("DDG values:\n", ddg_array)
+
+	stable_ddg_values = ddg_array[ddg_array['IntraDDG'] < 0]
+	print("Stable DDG values:\n", stable_ddg_values)
 
 	return "_"
 
