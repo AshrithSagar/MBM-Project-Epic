@@ -160,9 +160,6 @@ def _main():
 	sequence, mutations = format_input(contents)
 	sequences = [sequence]
 
-	# If --output not specified, use input_file filename.
-	output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_sequences.txt")
-
 	if args.groups:
 		sequences = groups_mutations(sequence, mutations)
 
@@ -175,8 +172,14 @@ def _main():
 	# sequences = intein_matches(sequences)
 
 	print("Output sequences:", sequences)
-	if args.output_file:
-		pass
+	
+	# If --output not specified, use input_file filename.
+	output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_sequences.txt")
+	
+	# Save the output.
+	new_contents = "".join(sequences)
+	file = open(output_file, "w")
+	file.write(new_contents)
 
 
 if __name__ == "__main__":
