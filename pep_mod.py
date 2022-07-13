@@ -25,7 +25,6 @@ def ddg_values(alascan_file):
 
 	return stable_ddg_values
 
-
 #========================================
 # Group mutations filter.
 #----------------------------------------
@@ -55,15 +54,6 @@ def groups_mutations(sequence, mutations):
 						new_sequence = sequence[:position-1] + AA + sequence[position:]
 						mutated_sequences.append(new_sequence)
 				break
-
-		# Random sampling
-		# Through Monte-Carlo.
-		# mean, var, skew, kurt = norm.stats(moments='mvsk')
-		
-
-		# The approach using random.
-		# mutated_sequences = random.sample(mutated_sequences, 5)
-
 	return mutated_sequences
 
 #========================================
@@ -124,6 +114,23 @@ def randomise_position(sequence):
 	# sequences = groups_mutations(sequence, mutation_positions)
 
 #========================================
+# Random sampling through random, and/or Monte-Carlo.
+#----------------------------------------
+def random_sampler(sequences, approach, choose = 5):
+	"""Random sampling"""
+	if approach == 'Monte-Carlo':
+		new_sequences = []
+		# mean, var, skew, kurt = norm.stats(moments='mvsk')
+		# [TODO]
+		return new_sequences
+
+	if approach == 'random':
+		# Choose 5 sequences by default.
+		new_sequences = random.sample(sequences, choose)
+		return new_sequences
+
+#========================================s
+
 def format_input(contents):
 	sequence = contents[0].replace('\n', '')
 	given_mutations = contents[1:]
@@ -150,6 +157,7 @@ def format_input(contents):
 
 		mutations.append(replacement)
 	return sequence, mutations
+
 
 def _main():
 	# For the command line parser.
