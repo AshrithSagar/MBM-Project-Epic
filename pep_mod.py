@@ -5,6 +5,8 @@ Peptide modifications.
 import random
 import argparse
 import re
+import csv
+import pandas as pd
 from scipy.stats import norm
 
 #========================================
@@ -12,10 +14,13 @@ from scipy.stats import norm
 #----------------------------------------
 def ddg_values(alascan_file):
 	"""Accepts .csv files: {Mutation, Position, DDG}."""
-	with open(alascan_file, "r") as file:
-	    contents = file.readlines()
+	with open(alascan_file, newline='') as csv_file:
+		csv_reader = csv.reader(csv_file, delimiter=',')
+		for row in csv_reader:
+			print(', '.join(row))
 
-	
+	return "_"
+
 
 #========================================
 # Group mutations filter.
