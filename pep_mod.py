@@ -120,7 +120,7 @@ def randomise_position(sequence):
 
 #========================================
 def format_input(contents):
-	sequence = contents[0]
+	sequence = contents[0].replace('\n', '')
 	given_mutations = contents[1:]
 	mutations = []
 
@@ -158,7 +158,7 @@ def _main():
 	with open(args.input_file, "r") as file:
 	    contents = file.readlines()
 	sequence, mutations = format_input(contents)
-	sequences = []
+	sequences = [sequence]
 
 	# If --output not specified, use input_file filename.
 	output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_sequences.txt")
