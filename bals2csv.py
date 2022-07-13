@@ -4,7 +4,6 @@
 import argparse
 from json import dumps as json_dumps
 import pandas as pd
-from decimal import Decimal
 
 def _main():
 	# For the command line parser.
@@ -42,27 +41,27 @@ def _main():
 		except: pass
 
 		value = line[24:36].strip()
-		try: json_contents["InterDG"].append(round(Decimal(value), 4))
+		try: json_contents["InterDG"].append(str(round(float(value), 4)))
 		except: pass
 
 		value = line[36:48].strip()
-		try: json_contents["InterDDG"].append(round(Decimal(value), 4))
+		try: json_contents["InterDDG"].append(str(round(float(value), 4)))
 		except: pass
 
 		value = line[48:60].strip()
-		try: json_contents["NormTerDDG"].append(round(Decimal(value), 4))
+		try: json_contents["NormTerDDG"].append(str(round(float(value), 4)))
 		except: pass
 
 		value = line[60:72].strip()
-		try: json_contents["IntraDG"].append(round(Decimal(value), 4))
+		try: json_contents["IntraDG"].append(str(round(float(value), 4)))
 		except: pass
 
 		value = line[72:84].strip()
-		try: json_contents["IntraDDG"].append(round(Decimal(value), 4))
+		try: json_contents["IntraDDG"].append(str(round(float(value), 4)))
 		except: pass
 
 		value = line[84:96].strip()
-		try: json_contents["NormTraDDG"].append(round(Decimal(value), 4))
+		try: json_contents["NormTraDDG"].append(str(round(float(value), 4)))
 		except: pass
 
 		value = line[96:107].strip()
