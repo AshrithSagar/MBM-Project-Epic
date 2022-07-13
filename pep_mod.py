@@ -14,10 +14,10 @@ from scipy.stats import norm
 #----------------------------------------
 def ddg_values(alascan_file):
 	"""Accepts .csv files: {Mutation, Position, DDG}."""
-	with open(alascan_file, newline='') as csv_file:
-		csv_reader = csv.reader(csv_file, delimiter=',')
-		for row in csv_reader:
-			print(', '.join(row))
+	df = pd.read_csv(alascan_file)
+
+	ddg_array = df[['Number', 'Name', 'IntraDDG']]
+	print(ddg_array)
 
 	return "_"
 
