@@ -191,7 +191,7 @@ def _main():
 	output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_sequences.txt")
 	
 	# Save the output.
-	new_contents = "".join(sequences)
+	new_contents = "\n".join(sequences)
 	file = open(output_file, "w")
 	file.write(new_contents)
 
