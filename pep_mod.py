@@ -18,7 +18,7 @@ def ddg_values(alascan_file):
 	df.set_index(['Index'])
 
 	ddg_array = df[['Number', 'Name', 'IntraDDG']]
-	print("DDG values:\n", ddg_array)
+	# print("DDG values:\n", ddg_array)
 
 	stable_ddg_values = ddg_array[ddg_array['IntraDDG'] < 0]
 	print("Stable DDG values:\n", stable_ddg_values)
@@ -37,23 +37,24 @@ def groups_mutations(sequence, mutations):
 		'nonpolar_aliphatic': ['G', 'A', 'V', 'L', 'M', 'J', 'I'],
 		'nonpolar_aromatic': ['F', 'Y', 'W']
 	}
-	sequence = str(sequence)
 	print("Original sequence:", sequence)
-	mutated_sequences = [] # The inputs for the next iteration.
+	mutated_sequences = []
 
 	for mutation in mutations:
+		print("Mutation:", mutation)
 		# Recognise the group of the mutation.
 		for types in AA_GROUPS.keys():
-			if replacement['wild_type'] in AA_GROUPS[types]:
+			if mutation['wild_type'] in AA_GROUPS[types]:
 				print("The mutation is of type:", types)
 				for AA in AA_GROUPS[types]:
-					if not AA is replacement['wild_type']:
+					if not AA is mutation['wild_type']:
 						# Replace the mutation with all possibilities within the group
-						position = int(replacement['position'])
-						print("Mutating", replacement['wild_type'],
+						position = int(mutation['position'])
+						print("Mutating", mutation['wild_type'],
 							"with", AA, "at", position)
-						new_sequence = sequence[:position] + AA + sequence[position+1:]
+						new_sequence = sequence[:position-1] + AA + sequence[position:]
 						mutated_sequences.append(new_sequence)
+				break
 
 		# Random sampling
 		# Through Monte-Carlo.
@@ -61,9 +62,8 @@ def groups_mutations(sequence, mutations):
 		
 
 		# The approach using random.
-		mutated_sequences = random.sample(mutated_sequences, 5)
+		# mutated_sequences = random.sample(mutated_sequences, 5)
 
-	print("Groups filtered: " + str(mutated_sequences))
 	return mutated_sequences
 
 #========================================
