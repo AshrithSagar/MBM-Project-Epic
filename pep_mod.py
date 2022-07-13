@@ -137,10 +137,14 @@ def format_input(contents):
 		mutation = mutation.replace('\n', '') # Remove newlines.
 		
 		replacement = {
-			'wild_type': re.findall(r'^(\w)', mutation)[0],
-			'position': re.findall(r'(\d)+', mutation)[0],
-			'mutant_type': re.findall(r'(\w)$', mutation)[0] # Ignored currently.
+			'wild_type': re.search(r'^([A-Za-z])', mutation),
+			'position': re.search(r'([0-9])+', mutation),
+			'mutant_type': re.search(r'([A-Za-z])$', mutation) # Ignored currently.
 		}
+
+		for key in replacement.keys():
+			element = replacement[key]
+			replacement[key] = element[0] if element is not None else element
 
 		# If only position is given.
 		if replacement['wild_type'] == None:
@@ -148,26 +152,29 @@ def format_input(contents):
 			replacement['wild_type'] = sequence[position]
 
 		mutations.append(replacement)
-	print(mutations)
+	return mutations
 
 def _main():
-	parser = argparse.ArgumentParser(description='Peptide modifications generator')
+	parser = argparse.ArgumentParser(prog='pep_mod', description='Peptide modifications generator')
 	parser.add_argument('input_file', type=str, help='Input file [.txt]')
 	parser.add_argument('-o', '--output', dest='output_file', type=str, help='Output filename')
+	parser.add_argument('-d', '--dipeptide', action='store_true', help='Dipeptides match')
+	parser.add_argument('-g', '--groups', action='store_true', help='Groups filter')
 	args = parser.parse_args()
 
 	with open(args.input_file, "r") as file:
 	    contents = file.readlines()
-	format_input(contents)
+	mutations = format_input(contents)
 
 	# If --output not specified, use input_file filename.
 	output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_sequences.txt")
 
+	# if args.groups:
 	# sequences = groups_check(sequence, [])
 	# sequences = dipeptide_matches(sequences)
 	# sequences = intein_matches(sequences)
 	# print("Output sequences:", sequences)
 
-#----------------------------------------
+
 if __name__ == "__main__":
 	_main()
