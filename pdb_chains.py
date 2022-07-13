@@ -5,6 +5,7 @@ import sys
 import argparse
 
 def _main():
+	# For the command line parser.
 	parser = argparse.ArgumentParser(description='Modify pdb chains')
 	parser.add_argument('input_file', type=str, help='Input .pdb file')
 	parser.add_argument('chains', type=list, help='List of chains to be included')
@@ -28,6 +29,7 @@ def _main():
 		try: new_contents.append(new_line)
 		except: pass
 	
+	# Save output.
 	new_contents = "".join(new_contents)
 	file = open(output_file, "w")
 	file.write(new_contents)

@@ -1,12 +1,13 @@
 """
 .bals to .csv converter
 """
-import sys
 import argparse
-import json
+from json import dumps as json_dumps
 import pandas as pd
+from decimal import Decimal
 
 def _main():
+	# For the command line parser.
 	parser = argparse.ArgumentParser(description='.bals to .csv converter')
 	parser.add_argument('input_file', type=str, help='Input .bals file')
 	parser.add_argument('-o', '--output', dest='output_file', type=str, help='Output filename')
@@ -41,34 +42,34 @@ def _main():
 		except: pass
 
 		value = line[24:36].strip()
-		try: json_contents["InterDG"].append(float(value))
+		try: json_contents["InterDG"].append(round(Decimal(value), 4))
 		except: pass
 
 		value = line[36:48].strip()
-		try: json_contents["InterDDG"].append(float(value))
+		try: json_contents["InterDDG"].append(round(Decimal(value), 4))
 		except: pass
 
 		value = line[48:60].strip()
-		try: json_contents["NormTerDDG"].append(float(value))
+		try: json_contents["NormTerDDG"].append(round(Decimal(value), 4))
 		except: pass
 
 		value = line[60:72].strip()
-		try: json_contents["IntraDG"].append(float(value))
+		try: json_contents["IntraDG"].append(round(Decimal(value), 4))
 		except: pass
 
 		value = line[72:84].strip()
-		try: json_contents["IntraDDG"].append(float(value))
+		try: json_contents["IntraDDG"].append(round(Decimal(value), 4))
 		except: pass
 
 		value = line[84:96].strip()
-		try: json_contents["NormTraDDG"].append(float(value))
+		try: json_contents["NormTraDDG"].append(round(Decimal(value), 4))
 		except: pass
 
 		value = line[96:107].strip()
 		try: json_contents["ChainAtoms"].append(int(value))
 		except: pass
 
-	json_contents = json.dumps(json_contents)
+	json_contents = json_dumps(json_contents)
 
 	# Save as .json
 	json_file = args.input_file.replace(".bals", ".json")

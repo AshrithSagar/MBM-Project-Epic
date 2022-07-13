@@ -7,8 +7,6 @@ import argparse
 import re
 from scipy.stats import norm
 
-import bals2csv
-
 #========================================
 # DDG values from Alanine scan.
 #----------------------------------------
@@ -16,10 +14,8 @@ def ddg_values(alascan_file):
 	"""Accepts .csv files: {Mutation, Position, DDG}."""
 	with open(alascan_file, "r") as file:
 	    contents = file.readlines()
-	
-	if alascan_file.endswith(".bals"):
-		print(".bals file input")
 
+	
 
 #========================================
 # Group mutations filter.
@@ -147,6 +143,7 @@ def format_input(contents):
 	return sequence, mutations
 
 def _main():
+	# For the command line parser.
 	parser = argparse.ArgumentParser(prog='pep_mod', description='Peptide modifications generator')
 	parser.add_argument('input_file', type=str, help='Input file [.txt]')
 	parser.add_argument('-o', '--output', dest='output_file', type=str, help='Output filename')
@@ -172,7 +169,7 @@ def _main():
 	# sequences = intein_matches(sequences)
 
 	print("Output sequences:", sequences)
-	
+
 	# If --output not specified, use input_file filename.
 	output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_sequences.txt")
 	
