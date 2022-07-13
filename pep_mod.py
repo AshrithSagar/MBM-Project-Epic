@@ -7,19 +7,24 @@ import argparse
 import re
 from scipy.stats import norm
 
-#========================================
-# Alanine scan.
-#----------------------------------------
-# [TODO]
+import bals2csv
 
 #========================================
-# DDG values
+# DDG values from Alanine scan.
 #----------------------------------------
-# [TODO]
+def ddg_values(alascan_file):
+	"""Accepts .csv files: {Mutation, Position, DDG}."""
+	with open(alascan_file, "r") as file:
+	    contents = file.readlines()
+	
+	if alascan_file.endswith(".bals"):
+		print(".bals file input")
+
 
 #========================================
-# Groups
-def groups_check(sequence, mutations):
+# Group mutations filter.
+#----------------------------------------
+def groups_mutations(sequence, mutations):
 	AA_GROUPS = {
 		'polar_uncharged': ['S', 'T', 'C', 'P', 'N', 'Q'],
 		'positively_charged': ['K', 'R', 'H'],
@@ -32,26 +37,13 @@ def groups_check(sequence, mutations):
 	mutated_sequences = [] # The inputs for the next iteration.
 
 	for mutation in mutations:
-		mutation = str(mutation)
-		print("Mutation:", mutation)
-
-		# Decode the replacement format.
-		replacement = {
-			'wild_type': re.findall(r'^(\w)', mutation)[0],
-			'position': re.findall(r'(\d)+', mutation)[0],
-			'mutant_type': re.findall(r'(\w)$', mutation)[0] # Ignored currently.
-		}
-		if replacement['wild_type'] == None:
-			position = int(replacement['position'])
-			replacement['wild_type'] = sequence[position]
-
-		# Replace the mutation with all possibilities within the group,
-		# by recognising its group.
+		# Recognise the group of the mutation.
 		for types in AA_GROUPS.keys():
 			if replacement['wild_type'] in AA_GROUPS[types]:
 				print("The mutation is of type:", types)
 				for AA in AA_GROUPS[types]:
 					if not AA is replacement['wild_type']:
+						# Replace the mutation with all possibilities within the group
 						position = int(replacement['position'])
 						print("Mutating", replacement['wild_type'],
 							"with", AA, "at", position)
@@ -117,14 +109,14 @@ def randomise_position(sequence):
 	"""Random positions"""
 	pass
 	# for mutation_position in range(len(sequence)):
-	# 	sequences = groups_check(sequence, [str(mutation_position)])
+	# 	sequences = groups_mutations(sequence, [str(mutation_position)])
 	
 	# mutation_positions = range(0, len(sequence))
 	# new_mutation_positions = []
 	# for position in map(str, mutated_positions):
 	# 	new_mutation_positions.append(str(position))
 	# mutated_positions = new_mutation_positions
-	# sequences = groups_check(sequence, mutation_positions)
+	# sequences = groups_mutations(sequence, mutation_positions)
 
 #========================================
 def format_input(contents):
@@ -152,7 +144,7 @@ def format_input(contents):
 			replacement['wild_type'] = sequence[position]
 
 		mutations.append(replacement)
-	return mutations
+	return sequence, mutations
 
 def _main():
 	parser = argparse.ArgumentParser(prog='pep_mod', description='Peptide modifications generator')
@@ -160,20 +152,31 @@ def _main():
 	parser.add_argument('-o', '--output', dest='output_file', type=str, help='Output filename')
 	parser.add_argument('-d', '--dipeptide', action='store_true', help='Dipeptides match')
 	parser.add_argument('-g', '--groups', action='store_true', help='Groups filter')
+	parser.add_argument('-a', '--alaninescan', help='Alanine scan DDG results')
 	args = parser.parse_args()
 
 	with open(args.input_file, "r") as file:
 	    contents = file.readlines()
-	mutations = format_input(contents)
+	sequence, mutations = format_input(contents)
+	sequences = []
 
 	# If --output not specified, use input_file filename.
 	output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_sequences.txt")
 
-	# if args.groups:
-	# sequences = groups_check(sequence, [])
-	# sequences = dipeptide_matches(sequences)
+	if args.groups:
+		sequences = groups_mutations(sequence, mutations)
+
+	if args.dipeptide:
+		sequences = dipeptide_matches(sequences)
+	
+	if args.alaninescan:
+		sequences = ddg_values(args.alaninescan)
+
 	# sequences = intein_matches(sequences)
-	# print("Output sequences:", sequences)
+
+	print("Output sequences:", sequences)
+	if args.output_file:
+		pass
 
 
 if __name__ == "__main__":
