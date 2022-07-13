@@ -13,7 +13,7 @@ from scipy.stats import norm
 # DDG values from Alanine scan.
 #----------------------------------------
 def ddg_values(alascan_file):
-	"""Accepts .csv files: {Mutation, Position, DDG}."""
+	"""Accepts .csv files: {Position, AA, DDG}."""
 	df = pd.read_csv(alascan_file)
 	df.set_index(['Index'])
 
@@ -23,7 +23,7 @@ def ddg_values(alascan_file):
 	stable_ddg_values = ddg_array[ddg_array['IntraDDG'] < 0]
 	print("Stable DDG values:\n", stable_ddg_values)
 
-	return "_"
+	return stable_ddg_values
 
 
 #========================================
@@ -173,7 +173,7 @@ def _main():
 		sequences = dipeptide_matches(sequences)
 	
 	if args.alaninescan:
-		sequences = ddg_values(args.alaninescan)
+		ddg_preferences = ddg_values(args.alaninescan)
 
 	# sequences = intein_matches(sequences)
 
