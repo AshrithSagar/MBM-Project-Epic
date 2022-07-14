@@ -45,6 +45,20 @@ def ddg_values_replot(alascan_file):
 
 	return less_one_ddg_values
 
+def ddg_get_positions(dataframe):
+	"""Accepts pandas dataframe"""
+	df_ResNumber = dataframe[['ResNumber']]
+	print(df_ResNumber)
+
+	positions = []
+	for index, ResNumber in df_ResNumber.iterrows():
+		position = re.search(r'([0-9])+', str(ResNumber))
+		position = position[0] if position is not None else position
+		positions.append(position)
+
+	print("Mutations at positions:", positions)
+	return positions
+
 #========================================
 # Group mutations filter.
 #----------------------------------------
@@ -202,6 +216,7 @@ def _main():
 	
 	if args.alaninescan:
 		ddg_preferences = ddg_values_replot(args.alaninescan)
+		mutation_positions = ddg_get_positions(ddg_preferences)
 
 	# sequences = intein_matches(sequences)
 
