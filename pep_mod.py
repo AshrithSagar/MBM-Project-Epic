@@ -222,6 +222,9 @@ def _main():
 
 	# sequences = intein_matches(sequences)
 
+	# Get unique sequences.
+	sequences = list(dict.fromkeys(sequences))
+
 	print("Output sequences:", sequences)
 
 	# If --output not specified, use input_file filename.
