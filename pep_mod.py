@@ -38,7 +38,12 @@ def ddg_values_replot(alascan_file):
 	neg_ddg_values = ddg_array[ddg_array['ddGs'] < 0]
 	print("Negative DDG values:\n", neg_ddg_values.sort_values('ddGs', ascending=True))
 
-	return ddg_array
+	print("Ascending DDG values:\n", ddg_array.sort_values('ddGs', ascending=True))
+
+	less_one_ddg_values = ddg_array[ddg_array['ddGs'] < 1]
+	print("Less than threshold 1kcal/mol DDG values:\n", less_one_ddg_values.sort_values('ddGs', ascending=True))
+
+	return less_one_ddg_values
 
 #========================================
 # Group mutations filter.
