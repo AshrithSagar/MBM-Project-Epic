@@ -162,6 +162,12 @@ def random_sampler(sequences, approach, choose = 5):
 
 #========================================s
 
+def save_sequences(file, sequences):
+	contents = "\n".join(sequences)
+	file = open(file, "w")
+	file.write(contents)
+
+
 def format_input(contents):
 	sequence = contents[0].replace('\n', '')
 	given_mutations = contents[1:]
@@ -228,12 +234,12 @@ def _main():
 	print("Output sequences:", sequences)
 
 	# If --output not specified, use input_file filename.
-	output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_sequences.txt")
-	
-	# Save the output.
-	new_contents = "\n".join(sequences)
-	file = open(output_file, "w")
-	file.write(new_contents)
+	output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_allSequences.txt")
+	save_sequences(output_file, sequences)
+
+	sequences = random_sampler(sequences, 'random', 5)
+	output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_randomSequences.txt")
+	save_sequences(output_file, sequences)
 
 
 if __name__ == "__main__":
