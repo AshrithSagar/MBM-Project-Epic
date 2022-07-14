@@ -12,7 +12,7 @@ from scipy.stats import norm
 #========================================
 # DDG values from Alanine scan.
 #----------------------------------------
-def ddg_values(alascan_file):
+def ddg_values_bals(alascan_file):
 	"""Accepts .csv files: {Position, AA, DDG}."""
 	df = pd.read_csv(alascan_file)
 	df.set_index(['Index'])
@@ -24,6 +24,21 @@ def ddg_values(alascan_file):
 	print("Stable DDG values:\n", stable_ddg_values)
 
 	return stable_ddg_values
+
+def ddg_values_replot(alascan_file):
+	"""Accepts .csv files from replot."""
+	df = pd.read_csv(alascan_file)
+
+	ddg_array = df[['ResNumber', 'ResName', 'ddGs']]
+	# print("DDG values:\n", ddg_array)
+
+	pos_ddg_values = ddg_array[ddg_array['ddGs'] > 0]
+	print("Positive DDG values:\n", pos_ddg_values.sort_values('ddGs', ascending=False))
+
+	neg_ddg_values = ddg_array[ddg_array['ddGs'] < 0]
+	print("Negative DDG values:\n", neg_ddg_values.sort_values('ddGs', ascending=True))
+
+	return ddg_array
 
 #========================================
 # Group mutations filter.
@@ -100,7 +115,7 @@ def dipeptide_matches(sequences):
 #========================================
 # Randomiser for positions.
 #----------------------------------------
-def randomise_position(sequence):
+def randomise_mutater(sequence):
 	"""Random positions"""
 	pass
 	# for mutation_position in range(len(sequence)):
@@ -181,7 +196,7 @@ def _main():
 		sequences = dipeptide_matches(sequences)
 	
 	if args.alaninescan:
-		ddg_preferences = ddg_values(args.alaninescan)
+		ddg_preferences = ddg_values_replot(args.alaninescan)
 
 	# sequences = intein_matches(sequences)
 
