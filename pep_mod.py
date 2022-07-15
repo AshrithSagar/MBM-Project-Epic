@@ -119,7 +119,20 @@ def dipeptide_mutater(sequence, ddg):
 	mutation_position = position+1 if lesser_ddg else position
 	print("Position", position, "has lesser ddG value among the dipeptide", match)
 
-	return mutation_position
+	contents = [sequence]
+	contents.extend(str(mutation_position))
+	print(contents)
+	sequence, mutations = format_input(contents)
+	dipeptide_changed_sequences = groups_mutations(sequence, mutations)
+
+	# Discard mutations that produce another dipeptide.
+	# Relies on that regex search returns first match.
+	for check_sequence in dipeptide_changed_sequences:
+		check_match, check_span = dipeptide_match(check_sequence)
+		if (check_match) and (check_span[1] - span[1] <= 1):
+			dipeptide_changed_sequences.remove(check_sequence)
+
+	return dipeptide_changed_sequences
 
 
 #========================================
