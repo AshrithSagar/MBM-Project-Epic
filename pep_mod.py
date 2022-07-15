@@ -237,9 +237,11 @@ def _main():
 	output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_allSequences.txt")
 	save_sequences(output_file, sequences)
 
-	sequences = random_sampler(sequences, 'random', 5)
-	output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_randomSequences.txt")
-	save_sequences(output_file, sequences)
+	try:
+		sequences = random_sampler(sequences, 'random', 5)
+		output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_randomSequences.txt")
+		save_sequences(output_file, sequences)
+	except: pass
 
 
 if __name__ == "__main__":
