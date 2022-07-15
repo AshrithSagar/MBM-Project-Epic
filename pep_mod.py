@@ -25,22 +25,25 @@ def ddg_values_bals(alascan_file):
 
 	return stable_ddg_values
 
-def ddg_values_replot(alascan_file):
+def ddg_replot_read(alascan_file):
 	"""Accepts .csv files from replot."""
 	df = pd.read_csv(alascan_file)
-
+	
 	ddg_array = df[['ResNumber', 'ResName', 'ddGs']]
 	# print("DDG values:\n", ddg_array)
+	
+	return ddg_array
 
-	pos_ddg_values = ddg_array[ddg_array['ddGs'] > 0]
+def ddg_replot_filter(dataframe):
+	pos_ddg_values = dataframe[dataframe['ddGs'] > 0]
 	print("Positive DDG values:\n", pos_ddg_values.sort_values('ddGs', ascending=False))
 
-	neg_ddg_values = ddg_array[ddg_array['ddGs'] < 0]
+	neg_ddg_values = dataframe[dataframe['ddGs'] < 0]
 	print("Negative DDG values:\n", neg_ddg_values.sort_values('ddGs', ascending=True))
 
-	print("Ascending DDG values:\n", ddg_array.sort_values('ddGs', ascending=True))
+	print("Ascending DDG values:\n", dataframe.sort_values('ddGs', ascending=True))
 
-	less_one_ddg_values = ddg_array[ddg_array['ddGs'] < 1]
+	less_one_ddg_values = dataframe[dataframe['ddGs'] < 1]
 	print("Less than threshold 1kcal/mol DDG values:\n", less_one_ddg_values.sort_values('ddGs', ascending=True))
 
 	return less_one_ddg_values
@@ -92,8 +95,9 @@ def groups_mutations(sequence, mutations):
 #----------------------------------------
 def dipeptide_match(sequence):
 	"""Returns whether a dipeptide is present or not"""
-	matches = re.search(r"(.)\1", str(sequence))
-	return bool(matches)
+	match = re.search(r"(.)\1", str(sequence))
+	if match: return match[0], match.span()
+	return None, None
 
 def dipeptide_matches(sequences):
 	"""Filters out and returns the non-dipeptide sequences"""
@@ -104,6 +108,19 @@ def dipeptide_matches(sequences):
 
 	print("Dipeptides filtered: " + str(new_sequences))
 	return new_sequences
+
+def dipeptide_mutater(sequence, ddg):
+	"""Mutates to remove dipeptides."""
+	match, span = dipeptide_match(sequence)
+	
+	# Decide mutation position by comparing ddG values.
+	position = span[0]
+	lesser_ddg = (ddg['ddGs'][position] > ddg['ddGs'][position+1])
+	mutation_position = position+1 if lesser_ddg else position
+	print("Position", position, "has lesser ddG value among the dipeptide", match)
+
+	return mutation_position
+
 
 #========================================
 # Intein sequences.
@@ -201,7 +218,7 @@ def _main():
 	parser = argparse.ArgumentParser(prog='pep_mod', description='Peptide modifications generator')
 	parser.add_argument('input_file', type=str, help='Input file [.txt]')
 	parser.add_argument('-o', '--output', dest='output_file', type=str, help='Output filename')
-	parser.add_argument('-d', '--dipeptide', action='store_true', help='Dipeptides match')
+	parser.add_argument('-d', '--dipeptide', action='store', help='Dipeptides match')
 	parser.add_argument('-g', '--groups', action='store_true', help='Groups filter')
 	parser.add_argument('-a', '--alaninescan', help='Alanine scan DDG results')
 	args = parser.parse_args()
@@ -215,10 +232,14 @@ def _main():
 		sequences = groups_mutations(sequence, mutations)
 
 	if args.dipeptide:
-		sequences = dipeptide_matches(sequences)
+		# sequences = dipeptide_matches(sequence)
+		ddg_array = ddg_replot_read(args.dipeptide)
+		result = dipeptide_mutater(sequence, ddg_array)
+		print(result)
 	
 	if args.alaninescan:
-		ddg_preferences = ddg_values_replot(args.alaninescan)
+		ddg_array = ddg_replot_read(args.alaninescan)
+		ddg_preferences = ddg_replot_filter(ddg_array)
 		mutation_positions = ddg_get_positions(ddg_preferences)
 		contents = [sequence]
 		contents.extend(mutation_positions)
