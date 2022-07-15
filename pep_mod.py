@@ -190,7 +190,7 @@ def format_input(contents):
 		# If only position is given.
 		if replacement['wild_type'] == None:
 			position = int(replacement['position'])
-			replacement['wild_type'] = sequence[position]
+			replacement['wild_type'] = sequence[position-1]
 
 		mutations.append(replacement)
 	return sequence, mutations
