@@ -117,7 +117,7 @@ def dipeptide_mutater(sequence, dipeptide, ddg):
 	position = span[0]
 	lesser_ddg = (ddg['ddGs'][position] > ddg['ddGs'][position+1])
 	mutation_position = position+1 if lesser_ddg else position
-	print("Position", position, "has lesser ddG value among the dipeptide", match)
+	print("Position", position+1, "has lesser ddG value among the dipeptide", match)
 
 	# Conservative replacement.
 	contents = [sequence]
@@ -251,6 +251,7 @@ def _main():
 		matches = re.finditer(r"(.)\1", str(sequence)) # Find all dipeptides.
 		for match in matches:
 			mutated_sequences = dipeptide_mutater(sequence, match, ddg_array)
+			print("Mutated sequences", mutated_sequences)
 			sequences.extend(mutated_sequences)
 	
 	if args.alaninescan:
