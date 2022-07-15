@@ -95,7 +95,7 @@ def groups_mutations(sequence, mutations):
 #----------------------------------------
 def dipeptide_match(sequence):
 	"""Returns whether a dipeptide is present or not"""
-	match = re.search(r"(.)\1", str(sequence))
+	match = re.search(r"(.)\1", str(sequence)) # Returns first dipeptide match.
 	if match: return match[0], match.span()
 	return None, None
 
@@ -109,9 +109,9 @@ def dipeptide_matches(sequences):
 	print("Dipeptides filtered: " + str(new_sequences))
 	return new_sequences
 
-def dipeptide_mutater(sequence, ddg):
+def dipeptide_mutater(sequence, dipeptide, ddg):
 	"""Mutates to remove dipeptides."""
-	match, span = dipeptide_match(sequence)
+	match, span = dipeptide[0], dipeptide.span()
 	
 	# Decide mutation position by comparing ddG values.
 	position = span[0]
@@ -119,8 +119,9 @@ def dipeptide_mutater(sequence, ddg):
 	mutation_position = position+1 if lesser_ddg else position
 	print("Position", position, "has lesser ddG value among the dipeptide", match)
 
+	# Conservative replacement.
 	contents = [sequence]
-	contents.extend(str(mutation_position))
+	contents.append(str(mutation_position)) # Just one mutation_position.
 	print(contents)
 	sequence, mutations = format_input(contents)
 	dipeptide_changed_sequences = groups_mutations(sequence, mutations)
@@ -190,7 +191,7 @@ def random_sampler(sequences, approach, choose = 5):
 		new_sequences = random.sample(sequences, choose)
 		return new_sequences
 
-#========================================s
+#========================================
 
 def save_sequences(file, sequences):
 	contents = "\n".join(sequences)
@@ -247,8 +248,10 @@ def _main():
 	if args.dipeptide:
 		# sequences = dipeptide_matches(sequence)
 		ddg_array = ddg_replot_read(args.dipeptide)
-		result = dipeptide_mutater(sequence, ddg_array)
-		print(result)
+		matches = re.finditer(r"(.)\1", str(sequence)) # Find all dipeptides.
+		for match in matches:
+			mutated_sequences = dipeptide_mutater(sequence, match, ddg_array)
+			sequences.extend(mutated_sequences)
 	
 	if args.alaninescan:
 		ddg_array = ddg_replot_read(args.alaninescan)
