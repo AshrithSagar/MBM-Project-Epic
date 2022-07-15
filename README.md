@@ -1,3 +1,20 @@
+# About
+
+## pep_mod.py
+
+- Peptide modifications
+
+- Conservative mutations
+- Di peptide filter
+
+## pdb_chains.py
+
+Modify chains of .pdb files
+
+## bals2csv.py
+
+.bals to .csv convertor
+
 # Installation
 
 ```shell
