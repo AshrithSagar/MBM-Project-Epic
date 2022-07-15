@@ -111,6 +111,13 @@ def dipeptide_matches(sequences):
 
 def dipeptide_mutater(sequence, dipeptide, ddg):
 	"""Mutates to remove dipeptides."""
+	AA_GROUPS = {
+		'polar_uncharged': ['S', 'T', 'C', 'P', 'N', 'Q'],
+		'positively_charged': ['K', 'R', 'H'],
+		'negatively_charged': ['D', 'E'],
+		'nonpolar_aliphatic': ['G', 'A', 'V', 'L', 'M', 'J', 'I'],
+		'nonpolar_aromatic': ['F', 'Y', 'W']
+	}
 	match, span = dipeptide[0], dipeptide.span()
 	
 	# Decide mutation position by comparing ddG values.
@@ -124,16 +131,25 @@ def dipeptide_mutater(sequence, dipeptide, ddg):
 	contents.append(str(mutation_position)) # Just one mutation_position.
 	print(contents)
 	sequence, mutations = format_input(contents)
-	dipeptide_changed_sequences = groups_mutations(sequence, mutations)
 
 	# Discard mutations that produce another dipeptide.
-	# Relies on that regex search returns first match.
-	for check_sequence in dipeptide_changed_sequences:
-		check_match, check_span = dipeptide_match(check_sequence)
-		if (check_match) and (check_span[1] - span[1] <= 1):
-			dipeptide_changed_sequences.remove(check_sequence)
-
-	return dipeptide_changed_sequences
+	new_mutations = []
+	for mutation in mutations:
+		# Recognise the group of the mutation.
+		for types in AA_GROUPS.keys():
+			if mutation['wild_type'] in AA_GROUPS[types]:
+				for AA in AA_GROUPS[types]:
+					if not AA is mutation['wild_type']:
+						position = int(mutation['position'])
+						if (AA == sequence[position-1])|(AA == sequence[position+1]):
+							print("Discarding mutation of", mutation['wild_type'],
+								"with", AA, "at", position)
+						else:
+							new_mutation = mutation
+							new_mutation['mutant_type'] = AA
+							new_mutations.append(new_mutation)
+				break
+	return new_mutations
 
 
 #========================================
@@ -247,12 +263,13 @@ def _main():
 
 	if args.dipeptide:
 		# sequences = dipeptide_matches(sequence)
+		all_mutations = []
 		ddg_array = ddg_replot_read(args.dipeptide)
 		matches = re.finditer(r"(.)\1", str(sequence)) # Find all dipeptides.
 		for match in matches:
-			mutated_sequences = dipeptide_mutater(sequence, match, ddg_array)
-			print("Mutated sequences", mutated_sequences)
-			sequences.extend(mutated_sequences)
+			mutations = dipeptide_mutater(sequence, match, ddg_array)
+			all_mutations.append(mutations)
+		sequences = groups_mutations(sequence, all_mutations)
 	
 	if args.alaninescan:
 		ddg_array = ddg_replot_read(args.alaninescan)
