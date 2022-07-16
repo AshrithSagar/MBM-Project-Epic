@@ -24,7 +24,7 @@ def _main():
 	chain = chains.pop(0)
 
 	for line in contents:
-		if line.startswith("TER"): chain = chains.pop(0)
+		if line.startswith("TER") | line.startswith("END"): chain = chains.pop(0)
 		new_line = line if not line.startswith("ATOM") else line[:21] + chain + line[22:]
 		try: new_contents.append(new_line)
 		except: pass
