@@ -267,21 +267,23 @@ def _main():
 	args = parser.parse_args()
 
 	with open(args.input_file, "r") as file:
-	    contents = file.readlines()
-	sequence, mutations = format_input(contents)
+	    input_contents = file.readlines()
+	sequence= input_contents[0]
 	sequences = [sequence]
 
 	if args.mutation_lock:
 		with open(args.mutation_lock, "r") as file:
-			contents = file.readlines()
-		
-		mutation_lock = []
-		for line in contents:
+			lock_contents = file.readlines()
+		mutation_lock = [sequence]
+		for line in lock_contents:
 			content = line.replace('\n', '') # Remove newlines.
 			mutation_lock.append(content)
-		print(mutation_lock)
+		print("Locked mutation positions:", mutation_lock[1:])
+		sequence, mutation_lock = format_input(mutation_lock)
 
 	if args.groups:
+		sequence, mutations = format_input(input_contents)
+		mutations = [x for x in mutations if (x not in mutation_lock)]
 		sequences = groups_mutations(sequence, mutations)
 
 	if args.alaninescan:
