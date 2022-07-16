@@ -69,7 +69,7 @@ def groups_mutations(sequence, mutations):
 		'polar_uncharged': ['S', 'T', 'C', 'P', 'N', 'Q'],
 		'positively_charged': ['K', 'R', 'H'],
 		'negatively_charged': ['D', 'E'],
-		'nonpolar_aliphatic': ['G', 'A', 'V', 'L', 'M', 'J', 'I'],
+		'nonpolar_aliphatic': ['G', 'A', 'V', 'L', 'M', 'I'],
 		'nonpolar_aromatic': ['F', 'Y', 'W']
 	}
 	print("Original sequence:", sequence)
