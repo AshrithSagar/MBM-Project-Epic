@@ -74,15 +74,16 @@ def groups_mutations(sequence, mutations):
 	print("Original sequence:", sequence)
 	mutated_sequences = []
 
-	if mutation['mutant_type']:
-		AA = mutation['mutant_type']
-		print("Mutating", mutation['wild_type'],
-			"with", AA, "at", position)
-		new_sequence = sequence[:position-1] + AA + sequence[position:]
-		mutated_sequences.append(new_sequence)
-	else:
-		for mutation in mutations:
-			print("Mutation:", mutation)
+	for mutation in mutations:
+		print("Mutation:", mutation)
+		if mutation['mutant_type']:
+			AA = mutation['mutant_type']
+			position = int(mutation['position'])
+			print("Mutating", mutation['wild_type'],
+				"with", AA, "at", position)
+			new_sequence = sequence[:position-1] + AA + sequence[position:]
+			mutated_sequences.append(new_sequence)
+		else:
 			# Recognise the group of the mutation.
 			for types in AA_GROUPS.keys():
 				if mutation['wild_type'] in AA_GROUPS[types]:
@@ -91,7 +92,7 @@ def groups_mutations(sequence, mutations):
 						if not AA is mutation['wild_type']:
 							# Replace the mutation with all possibilities within the group
 							position = int(mutation['position'])
-							print("Mutating", mutation['wild_type'],
+							print("G: Mutating", mutation['wild_type'],
 								"with", AA, "at", position)
 							new_sequence = sequence[:position-1] + AA + sequence[position:]
 							mutated_sequences.append(new_sequence)
@@ -131,8 +132,8 @@ def dipeptide_mutater(sequence, dipeptide, ddg):
 	# Decide mutation position by comparing ddG values.
 	position = span[0]
 	lesser_ddg = (ddg['ddGs'][position] > ddg['ddGs'][position+1])
-	mutation_position = position+1 if lesser_ddg else position
-	print("Position", position+1, "has lesser ddG value among the dipeptide", match)
+	mutation_position = position+2 if lesser_ddg else position+1
+	print("Position", mutation_position, "has lesser ddG value among the dipeptide", match)
 
 	# Conservative replacement.
 	contents = [sequence]
@@ -149,13 +150,13 @@ def dipeptide_mutater(sequence, dipeptide, ddg):
 				for AA in AA_GROUPS[types]:
 					if not AA is mutation['wild_type']:
 						position = int(mutation['position'])
-						print(position, sequence[position])
 						if (AA == sequence[position-2])|(AA == sequence[position]):
 							print("Discarding mutation of", mutation['wild_type'],
 								"with", AA, "at", position)
 						else:
-							new_mutation = mutation
-							new_mutation['mutant_type'] = AA
+							print("DP: Mutating", mutation['wild_type'],
+								"with", AA, "at", position)
+							new_mutation = mutation['wild_type'] + mutation['position'] + AA
 							new_mutations.append(new_mutation)
 				break
 	return new_mutations
@@ -279,18 +280,23 @@ def _main():
 		print(contents)
 		sequence, mutations = format_input(contents)
 		sequences = groups_mutations(sequence, mutations)
+		print("="*50)
 
 	if args.dipeptide:
 		# sequences = dipeptide_matches(sequence)
 		for seq in sequences:
-			all_mutations = []
+			contents = [seq]
 			ddg_array = ddg_replot_read(args.dipeptide)
 			matches = re.finditer(r"(.)\1", str(seq)) # Find all dipeptides.
 			for match in matches:
+				print(match)
 				mutations = dipeptide_mutater(seq, match, ddg_array)
-				all_mutations.append(mutations)
+				contents.extend(mutations)
+			print(contents)
+			seq, all_mutations = format_input(contents)
 			seqs = groups_mutations(seq, all_mutations)
-		sequences = intein_matches(seqs)
+
+	# sequences = intein_matches(seqs)
 
 	# Get unique sequences.
 	sequences = list(dict.fromkeys(sequences))
