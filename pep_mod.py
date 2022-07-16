@@ -294,6 +294,7 @@ def _main():
 		contents.extend(mutation_positions)
 		print(contents)
 		sequence, mutations = format_input(contents)
+		mutations = [x for x in mutations if (x not in mutation_lock)]
 		sequences = groups_mutations(sequence, mutations)
 		print("="*50)
 
