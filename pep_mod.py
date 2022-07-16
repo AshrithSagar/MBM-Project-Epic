@@ -78,7 +78,7 @@ def groups_mutations(sequence, mutations):
 	for mutation in mutations:
 		print("Mutation:", mutation)
 		if mutation['wild_type'] == 'P':
-			print("Skkiping Proline mutation at", mutation['position'])
+			print("Skiping Proline mutation at", mutation['position'])
 			continue
 		if mutation['mutant_type']:
 			AA = mutation['mutant_type']
