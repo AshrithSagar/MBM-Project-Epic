@@ -66,7 +66,7 @@ def ddg_get_positions(dataframe):
 #----------------------------------------
 def groups_mutations(sequence, mutations):
 	AA_GROUPS = {
-		'polar_uncharged': ['S', 'T', 'C', 'P', 'N', 'Q'],
+		'polar_uncharged': ['S', 'T', 'C', 'N', 'Q'],
 		'positively_charged': ['K', 'R', 'H'],
 		'negatively_charged': ['D', 'E'],
 		'nonpolar_aliphatic': ['G', 'A', 'V', 'L', 'M', 'I'],
@@ -77,6 +77,9 @@ def groups_mutations(sequence, mutations):
 
 	for mutation in mutations:
 		print("Mutation:", mutation)
+		if mutation['wild_type'] == 'P':
+			print("Skkiping Proline mutation at", mutation['position'])
+			continue
 		if mutation['mutant_type']:
 			AA = mutation['mutant_type']
 			position = int(mutation['position'])
