@@ -36,6 +36,7 @@ def ddg_replot_read(alascan_file):
 	return ddg_array
 
 def ddg_replot_filter(dataframe):
+	"""Filter out based on ddG thresholds"""
 	pos_ddg_values = dataframe[dataframe['ddGs'] > 0]
 	print("Positive DDG values:\n", pos_ddg_values.sort_values('ddGs', ascending=False))
 
