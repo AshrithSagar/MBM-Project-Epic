@@ -1,5 +1,6 @@
 """
 Peptide modifications.
+>> Development version. Many things have been hard-coded. Good luck! :)
 """
 #========================================
 import random
@@ -141,7 +142,8 @@ def dipeptide_mutater(sequence, dipeptide, ddg):
 				for AA in AA_GROUPS[types]:
 					if not AA is mutation['wild_type']:
 						position = int(mutation['position'])
-						if (AA == sequence[position-1])|(AA == sequence[position+1]):
+						print(position, sequence[position])
+						if (AA == sequence[position-2])|(AA == sequence[position]):
 							print("Discarding mutation of", mutation['wild_type'],
 								"with", AA, "at", position)
 						else:
