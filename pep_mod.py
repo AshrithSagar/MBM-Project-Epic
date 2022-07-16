@@ -78,7 +78,7 @@ def groups_mutations(sequence, mutations):
 	for mutation in mutations:
 		print("Mutation:", mutation)
 		if mutation in mutation_lock:
-			print("Skipping locked position", mutation['position'])
+			print("G: Skipping locked position", mutation['position'])
 			continue
 		if mutation['wild_type'] == 'P':
 			print("Skipping Proline mutation at", mutation['position'])
@@ -150,6 +150,9 @@ def dipeptide_mutater(sequence, dipeptide, ddg):
 	# Discard mutations that produce another dipeptide.
 	new_mutations = []
 	for mutation in mutations:
+		if mutation in mutation_lock:
+			print("DP: Skipping locked position", mutation['position'])
+			continue
 		# Recognise the group of the mutation.
 		for types in AA_GROUPS.keys():
 			if mutation['wild_type'] in AA_GROUPS[types]:
