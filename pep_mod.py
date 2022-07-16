@@ -263,12 +263,23 @@ def _main():
 	parser.add_argument('-d', '--dipeptide', action='store', help='Dipeptides match')
 	parser.add_argument('-g', '--groups', action='store_true', help='Groups filter')
 	parser.add_argument('-a', '--alaninescan', help='Alanine scan DDG results')
+	parser.add_argument('-l', '--lock', type=str, dest='mutation_lock', help='Mutation lock positions')
 	args = parser.parse_args()
 
 	with open(args.input_file, "r") as file:
 	    contents = file.readlines()
 	sequence, mutations = format_input(contents)
 	sequences = [sequence]
+
+	if args.mutation_lock:
+		with open(args.mutation_lock, "r") as file:
+			contents = file.readlines()
+		
+		mutation_lock = []
+		for line in contents:
+			content = line.replace('\n', '') # Remove newlines.
+			mutation_lock.append(content)
+		print(mutation_lock)
 
 	if args.groups:
 		sequences = groups_mutations(sequence, mutations)
