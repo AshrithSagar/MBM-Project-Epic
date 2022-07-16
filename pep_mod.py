@@ -148,16 +148,15 @@ def dipeptide_mutater(sequence, dipeptide, ddg):
 		for types in AA_GROUPS.keys():
 			if mutation['wild_type'] in AA_GROUPS[types]:
 				for AA in AA_GROUPS[types]:
-					if not AA is mutation['wild_type']:
-						position = int(mutation['position'])
-						if (AA == sequence[position-2])|(AA == sequence[position]):
-							print("Discarding mutation of", mutation['wild_type'],
-								"with", AA, "at", position)
-						else:
-							print("DP: Mutating", mutation['wild_type'],
-								"with", AA, "at", position)
-							new_mutation = mutation['wild_type'] + mutation['position'] + AA
-							new_mutations.append(new_mutation)
+					position = int(mutation['position'])
+					if (AA == sequence[position-2])|(AA == sequence[position]):
+						print("Discarding mutation of", mutation['wild_type'],
+							"with", AA, "at", position)
+					else:
+						print("DP: Mutating", mutation['wild_type'],
+							"with", AA, "at", position)
+						new_mutation = mutation['wild_type'] + mutation['position'] + AA
+						new_mutations.append(new_mutation)
 				break
 	return new_mutations
 
@@ -295,6 +294,7 @@ def _main():
 			print(contents)
 			seq, all_mutations = format_input(contents)
 			seqs = groups_mutations(seq, all_mutations)
+		sequences.extend(seqs)
 
 	# sequences = intein_matches(seqs)
 
