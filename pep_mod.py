@@ -73,7 +73,7 @@ def groups_mutations(sequence, mutations):
 		'nonpolar_aromatic': ['F', 'Y', 'W']
 	}
 	print("Original sequence:", sequence)
-	mutated_sequences = []
+	new_mutations = []
 
 	for mutation in mutations:
 		print("Mutation:", mutation)
@@ -85,23 +85,22 @@ def groups_mutations(sequence, mutations):
 			position = int(mutation['position'])
 			print("Mutating", mutation['wild_type'],
 				"with", AA, "at", position)
-			new_sequence = sequence[:position-1] + AA + sequence[position:]
-			mutated_sequences.append(new_sequence)
+			new_mutations.append(mutation)
 		else:
 			# Recognise the group of the mutation.
 			for types in AA_GROUPS.keys():
 				if mutation['wild_type'] in AA_GROUPS[types]:
 					print("The mutation is of type:", types)
 					for AA in AA_GROUPS[types]:
-						if not AA is mutation['wild_type']:
-							# Replace the mutation with all possibilities within the group
-							position = int(mutation['position'])
-							print("G: Mutating", mutation['wild_type'],
-								"with", AA, "at", position)
-							new_sequence = sequence[:position-1] + AA + sequence[position:]
-							mutated_sequences.append(new_sequence)
+						# Replace the mutation with all possibilities within the group
+						position = int(mutation['position'])
+						print("G: Mutating", mutation['wild_type'],
+							"with", AA, "at", position)
+						new_mutation = mutation['wild_type'] + mutation['position'] + AA
+						new_mutations.append(new_mutation)
 					break
-	return mutated_sequences
+	# P&C of new_mutations.
+	return new_mutations
 
 #========================================
 # Dipeptide filter.
