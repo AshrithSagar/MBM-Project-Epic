@@ -74,21 +74,28 @@ def groups_mutations(sequence, mutations):
 	print("Original sequence:", sequence)
 	mutated_sequences = []
 
-	for mutation in mutations:
-		print("Mutation:", mutation)
-		# Recognise the group of the mutation.
-		for types in AA_GROUPS.keys():
-			if mutation['wild_type'] in AA_GROUPS[types]:
-				print("The mutation is of type:", types)
-				for AA in AA_GROUPS[types]:
-					if not AA is mutation['wild_type']:
-						# Replace the mutation with all possibilities within the group
-						position = int(mutation['position'])
-						print("Mutating", mutation['wild_type'],
-							"with", AA, "at", position)
-						new_sequence = sequence[:position-1] + AA + sequence[position:]
-						mutated_sequences.append(new_sequence)
-				break
+	if mutation['mutant_type']:
+		AA = mutation['mutant_type']
+		print("Mutating", mutation['wild_type'],
+			"with", AA, "at", position)
+		new_sequence = sequence[:position-1] + AA + sequence[position:]
+		mutated_sequences.append(new_sequence)
+	else:
+		for mutation in mutations:
+			print("Mutation:", mutation)
+			# Recognise the group of the mutation.
+			for types in AA_GROUPS.keys():
+				if mutation['wild_type'] in AA_GROUPS[types]:
+					print("The mutation is of type:", types)
+					for AA in AA_GROUPS[types]:
+						if not AA is mutation['wild_type']:
+							# Replace the mutation with all possibilities within the group
+							position = int(mutation['position'])
+							print("Mutating", mutation['wild_type'],
+								"with", AA, "at", position)
+							new_sequence = sequence[:position-1] + AA + sequence[position:]
+							mutated_sequences.append(new_sequence)
+					break
 	return mutated_sequences
 
 #========================================
@@ -229,7 +236,7 @@ def format_input(contents):
 		replacement = {
 			'wild_type': re.search(r'^([A-Za-z])', mutation),
 			'position': re.search(r'([0-9])+', mutation),
-			'mutant_type': re.search(r'([A-Za-z])$', mutation) # Ignored currently.
+			'mutant_type': re.search(r'([A-Za-z])$', mutation)
 		}
 
 		for key in replacement.keys():
@@ -263,16 +270,6 @@ def _main():
 	if args.groups:
 		sequences = groups_mutations(sequence, mutations)
 
-	if args.dipeptide:
-		# sequences = dipeptide_matches(sequence)
-		all_mutations = []
-		ddg_array = ddg_replot_read(args.dipeptide)
-		matches = re.finditer(r"(.)\1", str(sequence)) # Find all dipeptides.
-		for match in matches:
-			mutations = dipeptide_mutater(sequence, match, ddg_array)
-			all_mutations.append(mutations)
-		sequences = groups_mutations(sequence, all_mutations)
-	
 	if args.alaninescan:
 		ddg_array = ddg_replot_read(args.alaninescan)
 		ddg_preferences = ddg_replot_filter(ddg_array)
@@ -283,7 +280,17 @@ def _main():
 		sequence, mutations = format_input(contents)
 		sequences = groups_mutations(sequence, mutations)
 
-	# sequences = intein_matches(sequences)
+	if args.dipeptide:
+		# sequences = dipeptide_matches(sequence)
+		for seq in sequences:
+			all_mutations = []
+			ddg_array = ddg_replot_read(args.dipeptide)
+			matches = re.finditer(r"(.)\1", str(seq)) # Find all dipeptides.
+			for match in matches:
+				mutations = dipeptide_mutater(seq, match, ddg_array)
+				all_mutations.append(mutations)
+			seqs = groups_mutations(seq, all_mutations)
+		sequences = intein_matches(seqs)
 
 	# Get unique sequences.
 	sequences = list(dict.fromkeys(sequences))
