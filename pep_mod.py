@@ -77,8 +77,11 @@ def groups_mutations(sequence, mutations):
 
 	for mutation in mutations:
 		print("Mutation:", mutation)
+		if mutation in mutation_lock:
+			print("Skipping locked position", mutation['position'])
+			continue
 		if mutation['wild_type'] == 'P':
-			print("Skiping Proline mutation at", mutation['position'])
+			print("Skipping Proline mutation at", mutation['position'])
 			continue
 		if mutation['mutant_type']:
 			AA = mutation['mutant_type']
@@ -274,6 +277,7 @@ def _main():
 	if args.mutation_lock:
 		with open(args.mutation_lock, "r") as file:
 			lock_contents = file.readlines()
+		global mutation_lock
 		mutation_lock = [sequence]
 		for line in lock_contents:
 			content = line.replace('\n', '') # Remove newlines.
@@ -283,7 +287,6 @@ def _main():
 
 	if args.groups:
 		sequence, mutations = format_input(input_contents)
-		mutations = [x for x in mutations if (x not in mutation_lock)]
 		sequences = groups_mutations(sequence, mutations)
 
 	if args.alaninescan:
@@ -294,7 +297,6 @@ def _main():
 		contents.extend(mutation_positions)
 		print(contents)
 		sequence, mutations = format_input(contents)
-		mutations = [x for x in mutations if (x not in mutation_lock)]
 		sequences = groups_mutations(sequence, mutations)
 		print("="*50)
 
