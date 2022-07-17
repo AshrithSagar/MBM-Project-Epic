@@ -65,6 +65,7 @@ def ddg_get_positions(dataframe):
 # Group mutations filter.
 #----------------------------------------
 def groups_mutations(sequence, mutations):
+	"""Returns mutation arrays."""
 	AA_GROUPS = {
 		'polar_uncharged': ['S', 'T', 'C', 'N', 'Q'],
 		'positively_charged': ['K', 'R', 'H'],
@@ -102,8 +103,12 @@ def groups_mutations(sequence, mutations):
 						new_mutation = mutation['wild_type'] + mutation['position'] + AA
 						new_mutations.append(new_mutation)
 					break
-	# P&C of new_mutations.
 	return new_mutations
+
+def mutations2sequences(sequence, mutations):
+	"""P&C of new_mutations. nCr approach.
+	Choose r mutation positions at a time, out of n mutations"""
+	pass
 
 #========================================
 # Dipeptide filter.
