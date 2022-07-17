@@ -63,16 +63,16 @@ class BAlaS:
 			self.positions.append(position)
 
 
-class mutation:
+class mutation_object:
 	"""Mutation format
 	"""
-	def __init__(self, sequence, mutation=None):
+	def __init__(self, sequence, mutation):
+		self.wild_type = self.position = self.mutant_type = None
 		self.sequence = sequence
-		self.get(mutation)
-		# self.wild_type = self.position = self.mutant_type = None
+		self.store(mutation)
 
 
-	def get(self, mutation):
+	def store(self, mutation):
 		position = re.search(r'([0-9])+', mutation)
 		self.position = int(position[0]) if position is not None else self.position
 
@@ -82,6 +82,19 @@ class mutation:
 
 		mutant_type = re.search(r'([A-Za-z])$', mutation)
 		self.mutant_type = mutant_type[0] if mutant_type is not None else self.mutant_type
+
+
+	def new_mutant_type(self, mut_ty):
+		new_obj = self
+		new_obj.mutant_type = mut_ty
+		print("->", vars(self))
+		return new_obj
+
+
+	def to_str(self):
+		mutant_type = self.mutant_type if self.mutant_type else ''
+		mut_str = self.wild_type + str(self.position) + mutant_type
+		return mut_str
 
 
 class mutater:
@@ -100,21 +113,24 @@ class mutater:
 		self.mutation_lock = mutation_lock
 
 
-	def append_mutation(self, mutation):
-		"""Append input mutation to self.mutations
+	def append_mutation(self, mut_obj):
+		"""Append input mutation object to self.mutations
 		"""
-		self.mutations.append(mutation)
+		self.mutations.append(mut_obj)
 
 
 	def by_groups(self):
 		"""Returns mutation arrays based on group mutations
 		"""
-		print("G: Original sequence:", self.sequence)
-
+		sequence = self.sequence
+		mutation_lock = self.mutation_lock
+		groups = self.AA_GROUPS
+		print("G: Original sequence:", sequence)
+			
 		new_mutations = []
 		for mutation in self.mutations:
-			print("G: Mutation:", mutation)
-			if mutation in self.mutation_lock:
+			print("G: Mutation:", mutation.to_str())
+			if mutation in mutation_lock:
 				print("G: Skipping locked position", mutation.position)
 				continue
 			if mutation.wild_type == 'P':
@@ -126,19 +142,18 @@ class mutater:
 				new_mutations.append(mutation)
 			else:
 				# Recognise the group of the mutation.
-				for types in self.AA_GROUPS.keys():
-					if mutation.wild_type in self.AA_GROUPS[types]:
+				for types in groups.keys():
+					if mutation.wild_type in groups[types]:
 						# Self mutations are included.
 						print("G: The mutation is of type:", types)
-						for AA in AA_GROUPS[types]:
+						for AA in groups[types]:
 							# Replace the mutation with all possibilities within the group
 							print("G: Mutating", mutation.wild_type,
 								"with", AA, "at", mutation.position)
-							new_mutation = self.mutation()
-							new_mutation.wild_type = AA
+							new_mutation = mutation.new_mutant_type(AA)
 							new_mutations.append(new_mutation)
 						break
-		self.mutations.extend(new_mutations)
+		self.mutations = new_mutations
 		return new_mutations
 
 
@@ -306,15 +321,14 @@ def save_as(file, contents):
 def format_input(contents):
 	sequence = contents[0].replace('\n', '')
 	given_mutations = contents[1:]
-	mutations = mutations(sequence)
+	mutations_obj = mutater(sequence)
 	
 	# Decode in the mutations format.
-	for mutation in given_mutations:
-		mutation = mutation.replace('\n', '') # Remove newlines.
-		mutation = mutations.mutation().get(mutation)
-		print(mutation)
-		mutations.append_mutation(mutation)
-	return sequence, mutations
+	for line in given_mutations:
+		line = line.replace('\n', '') # Remove newlines.
+		mut = mutation_object(sequence, line)
+		mutations_obj.append_mutation(mut)
+	return mutations_obj
 
 
 def main():
@@ -331,14 +345,9 @@ def main():
 
 	with open(args.input_file, "r") as file:
 	    input_contents = file.readlines()
-	sequence = input_contents[0]
+	mutations_obj = format_input(input_contents)
+	sequence = mutations_obj.sequence
 	sequences = [sequence]
-
-	a = mutater(sequence)
-	print(a)
-	b = mutation(sequence, "N2P")
-	print(dir(b))
-	exit(0)
 
 	if args.mutation_lock:
 		with open(args.mutation_lock, "r") as file:
@@ -352,8 +361,9 @@ def main():
 		sequence, mutation_lock = format_input(mutation_lock)
 
 	if args.groups:
-		mutate = mutations(sequence)
-		mutations = mutate.by_groups()
+		mutations = mutations_obj.by_groups()
+		print(mutations)
+		exit(0)
 		sequences = mutate.to_sequences(mutations, args.mutation_count)
 		sequence, mutations = format_input(input_contents)
 		sequences = groups_mutations(sequence, mutations)
