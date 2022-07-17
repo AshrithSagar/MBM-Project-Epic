@@ -5,7 +5,7 @@ import argparse
 import re
 import csv
 import itertools
-from pandas import read_csv
+import pandas
 from scipy.stats import norm
 
 
@@ -19,7 +19,7 @@ class BAlaS:
 	def bals_read(self, bals2csv_file):
 		"""Accepts .csv files converted using bals2csv.py
 		"""
-		self.df_bals = read_csv(bals2csv_file)
+		self.df_bals = pandas.read_csv(bals2csv_file)
 		self.df_bals.set_index(['Index'])
 
 		self.df_bals = self.df_bals[['Number', 'Name', 'IntraDDG']]
@@ -31,7 +31,7 @@ class BAlaS:
 
 	def replot_read(self, replot_csv_file):
 		"""Accepts .csv files from replot"""
-		self.df_ddg = read_csv(replot_csv_file)
+		self.df_ddg = pandas.read_csv(replot_csv_file)
 		self.df_ddg = self.df_ddg[['ResNumber', 'ResName', 'ddGs']]
 		# print("DDG values:\n", self.df_ddg)
 
@@ -87,11 +87,11 @@ class mutations:
 
 
 		def get(self, mutation):
-			wild_type = re.search(r'^([A-Za-z])', mutation)
-			self.wild_type = wild_type[0] if wild_type is not None else self.wild_type
-			
 			position = re.search(r'([0-9])+', mutation)
 			self.position = position[0] if position is not None else self.position
+
+			wild_type = re.search(r'^([A-Za-z])', mutation)
+			self.wild_type = wild_type[0] if wild_type is not None else self.wild_type
 			
 			mutant_type = re.search(r'([A-Za-z])$', mutation)
 			self.mutant_type = mutant_type[0] if mutant_type is not None else self.mutant_type
@@ -100,12 +100,12 @@ class mutations:
 	def by_groups(self):
 		"""Returns mutation arrays based on group mutations
 		"""
-		print("Original sequence:", sequence)
+		print("Original sequence:", self.sequence)
 		new_mutations = []
 
-		for mutation in mutations:
+		for mutation in self.mutations:
 			print("Mutation:", mutation)
-			if mutation in mutation_lock:
+			if mutation in self.mutation_lock:
 				print("G: Skipping locked position", mutation['position'])
 				continue
 			if mutation['wild_type'] == 'P':
@@ -137,7 +137,7 @@ class mutations:
 		"""P&C of new_mutations. nCr approach.
 		Choose r mutation positions at a time, out of n mutations"""
 		# sequence, mutations, count
-		permutations = itertools.permutations(mutations, count)
+		permutations = itertools.combinations(mutations, count)
 
 		mutated_sequences = []
 		for mutation_tuple in permutations:
@@ -273,6 +273,7 @@ class mutations:
 
 	def monte_carlo_sampler(self, choose=5):
 		"""Random sampling through Monte-Carlo.
+		A normal distribution is chosen.
 		Chooses 5 sequences by default.
 		"""
 		new_sequences = []
@@ -281,10 +282,10 @@ class mutations:
 		return new_sequences
 
 
-def save_sequences(file, sequences):
-	contents = "\n".join(sequences)
+def save_as(file, contents):
+	content = "\n".join(contents)
 	file = open(file, "w")
-	file.write(contents)
+	file.write(content)
 
 
 def format_input(contents):
@@ -322,7 +323,7 @@ def main():
 	parser.add_argument('-o', '--output', dest='output_file', type=str, help='Output filename')
 	parser.add_argument('-d', '--dipeptide', action='store', help='Dipeptides match')
 	parser.add_argument('-g', '--groups', action='store_true', help='Groups filter')
-	parser.add_argument('-a', '--alaninescan', help='Alanine scan DDG results')
+	parser.add_argument('-a', '--alaninescan', help='Alanine scan DDG results from BUDE Alanine scan')
 	parser.add_argument('-l', '--lock', type=str, dest='mutation_lock', help='Mutation lock positions')
 	parser.add_argument('-c', '--count', type=int, dest='mutation_count', help='Number of mutations to consider at a time', default=1)
 	args = parser.parse_args()
@@ -344,19 +345,19 @@ def main():
 		sequence, mutation_lock = format_input(mutation_lock)
 
 	if args.groups:
+		# [TODO]
 		sequence, mutations = format_input(input_contents)
 		sequences = groups_mutations(sequence, mutations)
 
 	if args.alaninescan:
-		ddg_array = ddg_replot_read(args.alaninescan)
-		ddg_preferences = ddg_replot_filter(ddg_array)
-		mutation_positions = ddg_get_positions(ddg_preferences)
-		contents = [sequence]
-		contents.extend(mutation_positions)
-		print(contents)
-		sequence, mutations = format_input(contents)
-		mutations = groups_mutations(sequence, mutations)
-		sequences = mutations2sequences(sequence, mutations, args.mutation_count)
+		bude = BAlaS()
+		df_ddg = bude.replot_read(args.alaninescan)
+		ddg_preferences = bude.replot_filter(df_ddg, 1) # Threshold 1kCal/mol
+		positions = bude.get_positions(ddg_preferences)
+		# [TODO]
+		mutate = mutations(sequence)
+		mutations = mutate.by_groups()
+		sequences = mutate.to_sequences(mutations, args.mutation_count)
 		print("="*50)
 
 	if args.dipeptide:
@@ -377,7 +378,8 @@ def main():
 	# sequences = intein_matches(seqs)
 
 	# Get unique sequences.
-	sequences = list(dict.fromkeys(sequences))
+	get_unique = lambda seqs: list(dict.fromkeys(seqs))
+	sequences = get_unique(sequences)
 
 	print("Output sequences:", sequences)
 	print("Output sequences count:", len(sequences))
@@ -389,7 +391,7 @@ def main():
 	try:
 		sequences = random_sampler(sequences, 'random', 5)
 		output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_randomSequences.txt")
-		save_sequences(output_file, sequences)
+		save_as(output_file, sequences)
 	except: pass
 
 
