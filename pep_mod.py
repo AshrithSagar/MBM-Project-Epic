@@ -63,10 +63,31 @@ class BAlaS:
 			self.positions.append(position)
 
 
-class mutations:
+class mutation:
+	"""Mutation format
+	"""
+	def __init__(self, sequence, mutation=None):
+		self.sequence = sequence
+		self.get(mutation)
+		# self.wild_type = self.position = self.mutant_type = None
+
+
+	def get(self, mutation):
+		position = re.search(r'([0-9])+', mutation)
+		self.position = int(position[0]) if position is not None else self.position
+
+		wild_type = re.search(r'^([A-Za-z])', mutation)
+		self.wild_type = wild_type[0] if wild_type is not None else self.wild_type
+		if self.wild_type is None: self.wild_type = self.sequence[self.position-1]
+
+		mutant_type = re.search(r'([A-Za-z])$', mutation)
+		self.mutant_type = mutant_type[0] if mutant_type is not None else self.mutant_type
+
+
+class mutater:
 	"""Mutater: groups, ddg, dipeptide
 	"""
-	def __init__(self, sequence, mutations=[]):
+	def __init__(self, sequence, mutations=[], mutation_lock=[]):
 		self.AA_GROUPS = {
 			'polar_uncharged': ['S', 'T', 'C', 'N', 'Q'],
 			'positively_charged': ['K', 'R', 'H'],
@@ -76,33 +97,20 @@ class mutations:
 		}
 		self.sequence = sequence
 		self.mutations = mutations
-		self.mutation_lock = None
+		self.mutation_lock = mutation_lock
 
 
-	class mutation:
-		"""Mutation format
+	def append_mutation(self, mutation):
+		"""Append input mutation to self.mutations
 		"""
-		def __init__(self):
-			self.sequence = sequence
-			self.wild_type = self.position = self.mutant_type = None
-
-
-		def get(self, mutation):
-			position = re.search(r'([0-9])+', mutation)
-			self.position = position[0] if position is not None else self.position
-
-			wild_type = re.search(r'^([A-Za-z])', mutation)
-			self.wild_type = wild_type[0] if wild_type is not None else self.wild_type
-			
-			mutant_type = re.search(r'([A-Za-z])$', mutation)
-			self.mutant_type = mutant_type[0] if mutant_type is not None else self.mutant_type
+		self.mutations.append(mutation)
 
 
 	def by_groups(self):
 		"""Returns mutation arrays based on group mutations
 		"""
 		print("G: Original sequence:", self.sequence)
-		
+
 		new_mutations = []
 		for mutation in self.mutations:
 			print("G: Mutation:", mutation)
@@ -229,7 +237,7 @@ class sequences:
 	def check_dipeptide(self, sequence):
 		"""Returns first dipeptide match if present, else None
 		"""
-		match = re.search(r"(.)\1", str(sequence)) 
+		match = re.search(r"(.)\1", str(sequence))
 		if match: return match[0], match.span()
 		return None, None
 
@@ -298,28 +306,14 @@ def save_as(file, contents):
 def format_input(contents):
 	sequence = contents[0].replace('\n', '')
 	given_mutations = contents[1:]
-	mutations = []
-
-	# Decode the replacement mutations format.
+	mutations = mutations(sequence)
+	
+	# Decode in the mutations format.
 	for mutation in given_mutations:
 		mutation = mutation.replace('\n', '') # Remove newlines.
-
-		replacement = {
-			'wild_type': re.search(r'^([A-Za-z])', mutation),
-			'position': re.search(r'([0-9])+', mutation),
-			'mutant_type': re.search(r'([A-Za-z])$', mutation)
-		}
-
-		for key in replacement.keys():
-			element = replacement[key]
-			replacement[key] = element[0] if element is not None else element
-
-		# If only position is given.
-		if replacement['wild_type'] == None:
-			position = int(replacement['position'])
-			replacement['wild_type'] = sequence[position-1]
-
-		mutations.append(replacement)
+		mutation = mutations.mutation().get(mutation)
+		print(mutation)
+		mutations.append_mutation(mutation)
 	return sequence, mutations
 
 
@@ -339,6 +333,12 @@ def main():
 	    input_contents = file.readlines()
 	sequence = input_contents[0]
 	sequences = [sequence]
+
+	a = mutater(sequence)
+	print(a)
+	b = mutation(sequence, "N2P")
+	print(dir(b))
+	exit(0)
 
 	if args.mutation_lock:
 		with open(args.mutation_lock, "r") as file:
