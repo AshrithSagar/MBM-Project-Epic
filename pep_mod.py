@@ -10,7 +10,7 @@ from scipy.stats import norm
 
 
 class BAlaS:
-	"""BUDE Alanine Scan: ddG values.
+	"""BUDE Alanine Scan: ddG values
 	"""
 	def __init__(self, alascan_file):
 		self.stable_df_bals = self.df_bals = self.df_ddg = None
@@ -63,11 +63,10 @@ class BAlaS:
 			self.positions.append(position)
 
 
-#========================================
-# Group mutations filter.
-#----------------------------------------
 class mutations:
-	def __init__(self):
+	"""Mutater: groups, ddg, dipeptide
+	"""
+	def __init__(self, sequence, mutations=None):
 		self.AA_GROUPS = {
 			'polar_uncharged': ['S', 'T', 'C', 'N', 'Q'],
 			'positively_charged': ['K', 'R', 'H'],
@@ -75,7 +74,27 @@ class mutations:
 			'nonpolar_aliphatic': ['G', 'A', 'V', 'L', 'M', 'I'],
 			'nonpolar_aromatic': ['F', 'Y', 'W']
 		}
-		self.sequence = self.mutations = None
+		self.sequence = sequence
+		self.mutations = mutations
+
+
+	class mutation:
+		"""Mutation format
+		"""
+		def __init__(self, sequence):
+			self.sequence = sequence
+			self.wild_type = self.position = self.mutant_type = None
+
+
+		def get(self, mutation):
+			wild_type = re.search(r'^([A-Za-z])', mutation)
+			self.wild_type = wild_type[0] if wild_type is not None else self.wild_type
+			
+			position = re.search(r'([0-9])+', mutation)
+			self.position = position[0] if position is not None else self.position
+			
+			mutant_type = re.search(r'([A-Za-z])$', mutation)
+			self.mutant_type = mutant_type[0] if mutant_type is not None else self.mutant_type
 
 
 	def by_groups(self):
