@@ -110,8 +110,27 @@ def groups_mutations(sequence, mutations):
 def mutations2sequences(sequence, mutations, count):
 	"""P&C of new_mutations. nCr approach.
 	Choose r mutation positions at a time, out of n mutations"""
-	sequences = itertools.permutations(mutations, count)
-	return sequences
+	permutations = itertools.permutations(mutations, count)
+
+	mutated_sequences = []
+	for mutation_tuple in permutations:
+		print("S: Mutations:", mutation_tuple)
+		for mutation in mutation_tuple:
+			replacement = {
+				'wild_type': re.search(r'^([A-Za-z])', mutation),
+				'position': re.search(r'([0-9])+', mutation),
+				'mutant_type': re.search(r'([A-Za-z])$', mutation)
+			}
+			
+			for key in replacement.keys():
+				element = replacement[key]
+				replacement[key] = element[0] if element is not None else element
+
+			position = int(replacement['position'])
+			new_sequence = sequence[:position-1] + replacement['mutant_type'] + sequence[position:]
+			mutated_sequences.append(new_sequence)
+
+	return mutated_sequences
 
 #========================================
 # Dipeptide filter.
@@ -308,7 +327,8 @@ def _main():
 		contents.extend(mutation_positions)
 		print(contents)
 		sequence, mutations = format_input(contents)
-		sequences = groups_mutations(sequence, mutations)
+		mutations = groups_mutations(sequence, mutations)
+		sequences = mutations2sequences(sequence, mutations, 2)
 		print("="*50)
 
 	if args.dipeptide:
