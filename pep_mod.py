@@ -297,6 +297,7 @@ def _main():
 	parser.add_argument('-g', '--groups', action='store_true', help='Groups filter')
 	parser.add_argument('-a', '--alaninescan', help='Alanine scan DDG results')
 	parser.add_argument('-l', '--lock', type=str, dest='mutation_lock', help='Mutation lock positions')
+	parser.add_argument('-c', '--count', type=int, dest='mutation_count', help='Number of mutations to consider at a time', default=1)
 	args = parser.parse_args()
 
 	with open(args.input_file, "r") as file:
@@ -328,7 +329,7 @@ def _main():
 		print(contents)
 		sequence, mutations = format_input(contents)
 		mutations = groups_mutations(sequence, mutations)
-		sequences = mutations2sequences(sequence, mutations, 2)
+		sequences = mutations2sequences(sequence, mutations, args.mutation_count)
 		print("="*50)
 
 	if args.dipeptide:
@@ -352,6 +353,7 @@ def _main():
 	sequences = list(dict.fromkeys(sequences))
 
 	print("Output sequences:", sequences)
+	print("Output sequences count:", len(sequences))
 
 	# If --output not specified, use input_file filename.
 	output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_allSequences.txt")
