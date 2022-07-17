@@ -66,7 +66,7 @@ class BAlaS:
 class mutations:
 	"""Mutater: groups, ddg, dipeptide
 	"""
-	def __init__(self, sequence, mutations=None):
+	def __init__(self, sequence, mutations=[]):
 		self.AA_GROUPS = {
 			'polar_uncharged': ['S', 'T', 'C', 'N', 'Q'],
 			'positively_charged': ['K', 'R', 'H'],
@@ -76,12 +76,13 @@ class mutations:
 		}
 		self.sequence = sequence
 		self.mutations = mutations
+		self.mutation_lock = None
 
 
 	class mutation:
 		"""Mutation format
 		"""
-		def __init__(self, sequence):
+		def __init__(self):
 			self.sequence = sequence
 			self.wild_type = self.position = self.mutant_type = None
 
@@ -100,44 +101,44 @@ class mutations:
 	def by_groups(self):
 		"""Returns mutation arrays based on group mutations
 		"""
-		print("Original sequence:", self.sequence)
+		print("G: Original sequence:", self.sequence)
+		
 		new_mutations = []
-
 		for mutation in self.mutations:
-			print("Mutation:", mutation)
+			print("G: Mutation:", mutation)
 			if mutation in self.mutation_lock:
-				print("G: Skipping locked position", mutation['position'])
+				print("G: Skipping locked position", mutation.position)
 				continue
-			if mutation['wild_type'] == 'P':
-				print("Skipping Proline mutation at", mutation['position'])
+			if mutation.wild_type == 'P':
+				print("G: Skipping Proline mutation at", mutation.position)
 				continue
-			if mutation['mutant_type']:
-				AA = mutation['mutant_type']
-				position = int(mutation['position'])
-				print("Mutating", mutation['wild_type'],
-					"with", AA, "at", position)
+			if mutation.mutant_type:
+				print("G: Mutating", mutation.wild_type,
+					"with", mutation.mutant_type, "at", mutation.position)
 				new_mutations.append(mutation)
 			else:
 				# Recognise the group of the mutation.
-				for types in AA_GROUPS.keys():
-					if mutation['wild_type'] in AA_GROUPS[types]:
+				for types in self.AA_GROUPS.keys():
+					if mutation.wild_type in self.AA_GROUPS[types]:
 						# Self mutations are included.
-						print("The mutation is of type:", types)
+						print("G: The mutation is of type:", types)
 						for AA in AA_GROUPS[types]:
 							# Replace the mutation with all possibilities within the group
-							position = int(mutation['position'])
-							print("G: Mutating", mutation['wild_type'],
-								"with", AA, "at", position)
-							new_mutation = mutation['wild_type'] + mutation['position'] + AA
+							print("G: Mutating", mutation.wild_type,
+								"with", AA, "at", mutation.position)
+							new_mutation = self.mutation()
+							new_mutation.wild_type = AA
 							new_mutations.append(new_mutation)
 						break
+		self.mutations.extend(new_mutations)
 		return new_mutations
+
 
 	def to_sequences(self):
 		"""P&C of new_mutations. nCr approach.
 		Choose r mutation positions at a time, out of n mutations"""
 		# sequence, mutations, count
-		permutations = itertools.combinations(mutations, count)
+		permutations = itertools.permutations(mutations, count)
 
 		mutated_sequences = []
 		for mutation_tuple in permutations:
@@ -159,67 +160,6 @@ class mutations:
 
 		return mutated_sequences
 
-	def dipeptide_match(sequence):
-		"""Returns whether a dipeptide is present or not"""
-		match = re.search(r"(.)\1", str(sequence)) # Returns first dipeptide match.
-		if match: return match[0], match.span()
-		return None, None
-
-	def dipeptide_matches(sequences):
-		"""Filters out and returns the non-dipeptide sequences"""
-		new_sequences = sequences
-		for sequence in sequences:
-			if dipeptide_match(sequence):
-				new_sequences.pop(sequence)
-
-		print("Dipeptides filtered: " + str(new_sequences))
-		return new_sequences
-
-	def dipeptide_mutater(sequence, dipeptide, ddg):
-		"""Mutates to remove dipeptides."""
-		AA_GROUPS = {
-			'polar_uncharged': ['S', 'T', 'C', 'P', 'N', 'Q'],
-			'positively_charged': ['K', 'R', 'H'],
-			'negatively_charged': ['D', 'E'],
-			'nonpolar_aliphatic': ['G', 'A', 'V', 'L', 'M', 'J', 'I'],
-			'nonpolar_aromatic': ['F', 'Y', 'W']
-		}
-		match, span = dipeptide[0], dipeptide.span()
-
-		# Decide mutation position by comparing ddG values.
-		position = span[0]
-		lesser_ddg = (ddg['ddGs'][position] > ddg['ddGs'][position+1])
-		mutation_position = position+2 if lesser_ddg else position+1
-		print("Position", mutation_position, "has lesser ddG value among the dipeptide", match)
-
-		# Conservative replacement.
-		contents = [sequence]
-		contents.append(str(mutation_position)) # Just one mutation_position.
-		print(contents)
-		sequence, mutations = format_input(contents)
-
-		# Discard mutations that produce another dipeptide.
-		new_mutations = []
-		for mutation in mutations:
-			if mutation in mutation_lock:
-				print("DP: Skipping locked position", mutation['position'])
-				continue
-			# Recognise the group of the mutation.
-			for types in AA_GROUPS.keys():
-				if mutation['wild_type'] in AA_GROUPS[types]:
-					for AA in AA_GROUPS[types]:
-						position = int(mutation['position'])
-						if (AA == sequence[position-2])|(AA == sequence[position]):
-							print("Discarding mutation of", mutation['wild_type'],
-								"with", AA, "at", position)
-						else:
-							print("DP: Mutating", mutation['wild_type'],
-								"with", AA, "at", position)
-							new_mutation = mutation['wild_type'] + mutation['position'] + AA
-							new_mutations.append(new_mutation)
-					break
-		return new_mutations
-	
 
 	def by_intein_sequences(self):
 		"""[SKIPPED]
@@ -280,6 +220,73 @@ class mutations:
 		# mean, var, skew, kurt = norm.stats(moments='mvsk')
 		# [TODO]
 		return new_sequences
+
+
+class sequences:
+	def __init__(self):
+		pass
+
+	def check_dipeptide(self, sequence):
+		"""Returns first dipeptide match if present, else None
+		"""
+		match = re.search(r"(.)\1", str(sequence)) 
+		if match: return match[0], match.span()
+		return None, None
+
+	def dipeptide_matches(self, sequences):
+		"""Filters out and returns the non-dipeptide sequences"""
+		new_sequences = sequences
+		for sequence in sequences:
+			if dipeptide_match(sequence):
+				new_sequences.pop(sequence)
+
+		print("Dipeptides filtered: " + str(new_sequences))
+		return new_sequences
+
+	def dipeptide_mutater(self, sequence, dipeptide, ddg):
+		"""Mutates to remove dipeptides."""
+		AA_GROUPS = {
+			'polar_uncharged': ['S', 'T', 'C', 'P', 'N', 'Q'],
+			'positively_charged': ['K', 'R', 'H'],
+			'negatively_charged': ['D', 'E'],
+			'nonpolar_aliphatic': ['G', 'A', 'V', 'L', 'M', 'J', 'I'],
+			'nonpolar_aromatic': ['F', 'Y', 'W']
+		}
+		match, span = dipeptide[0], dipeptide.span()
+
+		# Decide mutation position by comparing ddG values.
+		position = span[0]
+		lesser_ddg = (ddg['ddGs'][position] > ddg['ddGs'][position+1])
+		mutation_position = position+2 if lesser_ddg else position+1
+		print("Position", mutation_position, "has lesser ddG value among the dipeptide", match)
+
+		# Conservative replacement.
+		contents = [sequence]
+		contents.append(str(mutation_position)) # Just one mutation_position.
+		print(contents)
+		sequence, mutations = format_input(contents)
+
+		# Discard mutations that produce another dipeptide.
+		new_mutations = []
+		for mutation in mutations:
+			if mutation in mutation_lock:
+				print("DP: Skipping locked position", mutation['position'])
+				continue
+			# Recognise the group of the mutation.
+			for types in AA_GROUPS.keys():
+				if mutation['wild_type'] in AA_GROUPS[types]:
+					for AA in AA_GROUPS[types]:
+						position = int(mutation['position'])
+						if (AA == sequence[position-2])|(AA == sequence[position]):
+							print("Discarding mutation of", mutation['wild_type'],
+								"with", AA, "at", position)
+						else:
+							print("DP: Mutating", mutation['wild_type'],
+								"with", AA, "at", position)
+							new_mutation = mutation['wild_type'] + mutation['position'] + AA
+							new_mutations.append(new_mutation)
+					break
+		return new_mutations
 
 
 def save_as(file, contents):
@@ -345,7 +352,9 @@ def main():
 		sequence, mutation_lock = format_input(mutation_lock)
 
 	if args.groups:
-		# [TODO]
+		mutate = mutations(sequence)
+		mutations = mutate.by_groups()
+		sequences = mutate.to_sequences(mutations, args.mutation_count)
 		sequence, mutations = format_input(input_contents)
 		sequences = groups_mutations(sequence, mutations)
 
