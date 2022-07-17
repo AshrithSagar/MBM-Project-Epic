@@ -7,6 +7,7 @@ import random
 import argparse
 import re
 import csv
+import itertools
 import pandas as pd
 from scipy.stats import norm
 
@@ -94,6 +95,7 @@ def groups_mutations(sequence, mutations):
 			# Recognise the group of the mutation.
 			for types in AA_GROUPS.keys():
 				if mutation['wild_type'] in AA_GROUPS[types]:
+					# Self mutations are included.
 					print("The mutation is of type:", types)
 					for AA in AA_GROUPS[types]:
 						# Replace the mutation with all possibilities within the group
@@ -105,10 +107,11 @@ def groups_mutations(sequence, mutations):
 					break
 	return new_mutations
 
-def mutations2sequences(sequence, mutations):
+def mutations2sequences(sequence, mutations, count):
 	"""P&C of new_mutations. nCr approach.
 	Choose r mutation positions at a time, out of n mutations"""
-	pass
+	sequences = itertools.permutations(mutations, count)
+	return sequences
 
 #========================================
 # Dipeptide filter.
