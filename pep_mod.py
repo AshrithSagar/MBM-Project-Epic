@@ -154,12 +154,19 @@ class mutater:
 		Choose r mutation positions at a time, out of n mutations.
 		Implemented using the Cartesian product."""
 		sequences = [x for x in itertools.product(*self.sequential_mutations)]
-		for sequence in sequences:
-			sequence = "".join(sequence)
-			print(sequence)
+		print("S| Converted mutations to sequences")
 
 		self.sequences = sequences
 		return sequences
+
+
+	def save_sequences(self, file):
+		"""Save self.sequences to a file"""
+		with open(file, "w") as f:
+		    for sequence in self.sequences:
+		        line = "".join(sequence)
+		        f.write(f"{line}\n")
+		print("S| Saved sequences to", file)
 
 
 	def by_intein_sequences(self):
@@ -348,6 +355,8 @@ def main():
 	if args.groups:
 		muts = mutations_obj.by_groups()
 		seqs = mutations_obj.to_sequences()
+		mutations_obj.save_sequences(output_file.replace(".txt", "_allSequences.txt"))
+
 
 	if args.alaninescan:
 		bude = BAlaS()
