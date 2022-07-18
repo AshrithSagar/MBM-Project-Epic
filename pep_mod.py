@@ -88,7 +88,6 @@ class mutation_object:
 	def new_mutant_type(self, mut_ty):
 		new_obj = copy.copy(self)
 		new_obj.mutant_type = mut_ty
-		print("->", vars(self))
 		return new_obj
 
 
@@ -126,33 +125,30 @@ class mutater:
 		sequence = self.sequence
 		mutation_lock = self.mutation_lock
 		groups = self.AA_GROUPS
-		print("G: Original sequence:", sequence)
+		print("G| Original sequence:", sequence)
 			
 		new_mutations = []
 		for mutation in self.mutations:
-			print("G: Mutation:", mutation.to_str())
-			if mutation in mutation_lock:
-				print("G: Skipping locked position", mutation.position)
+			print("G| Mutation:", mutation.to_str())
+			if mutation.position in mutation_lock:
+				print("G| Skipping locked position", mutation.position)
 				continue
 			if mutation.wild_type == 'P':
-				print("G: Skipping Proline mutation at", mutation.position)
+				print("G| Skipping Proline mutation at", mutation.position)
 				continue
 			if mutation.mutant_type:
-				print("G: Mutating", mutation.wild_type,
-					"with", mutation.mutant_type, "at", mutation.position)
 				new_mutations.append(mutation)
 			else:
 				# Recognise the group of the mutation.
 				for types in groups.keys():
 					if mutation.wild_type in groups[types]:
 						# Self mutations are included.
-						print("G: The mutation is of type:", types)
+						print("G| Type:", types)
 						for AA in groups[types]:
 							# Replace the mutation with all possibilities within the group
-							print("G: Mutating", mutation.wild_type,
-								"with", AA, "at", mutation.position)
 							new_mutation = mutation.new_mutant_type(AA)
 							new_mutations.append(new_mutation)
+							print("G| Mutating =>", new_mutation.to_str())
 						break
 		self.mutations = new_mutations
 		return new_mutations
