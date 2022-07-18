@@ -319,13 +319,15 @@ def format_input(contents):
 	
 	sequence = remove_new_line(contents[0])
 	given_mutations = contents[1:]
-	mutations_obj = mutater(sequence=sequence, mutations=[], mutation_lock=[])
-	
+		
 	# Decode in the mutations format.
+	muts = []
 	for line in given_mutations:
 		line = remove_new_line(line)
 		mut = mutation_object(sequence, line)
-		mutations_obj.append_mutation(mut)
+		muts.append(mut)
+
+	mutations_obj = mutater(sequence=sequence, mutations=muts, mutation_lock=[])
 	return mutations_obj
 
 
