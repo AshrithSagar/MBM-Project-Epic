@@ -168,8 +168,10 @@ class mutater:
 		"""P&C of new_mutations. nCr approach.
 		Choose r mutation positions at a time, out of n mutations.
 		Implemented using the Cartesian product."""
-		sequences = itertools.product(*self.sequential_mutations)
-		# sequences = [x for x in itertools.product(*self.sequential_mutations)]
+		try:
+			sequences = [x for x in itertools.product(*self.sequential_mutations)]
+		except:
+			sequences = itertools.product(*self.sequential_mutations)
 		print("S| Converted mutations to sequences format")
 
 		self.sequences = sequences
@@ -399,7 +401,6 @@ def main():
 		
 		muts = mutations_obj.by_groups()
 		seqs = mutations_obj.to_sequences()
-		mutations_obj.show_sequences()
 		mutations_obj.save_sequences(output_file.replace(".txt", "_BAlsAllSeqs.txt"))
 
 	if args.dipeptide:
