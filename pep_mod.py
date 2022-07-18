@@ -13,9 +13,10 @@ from scipy.stats import norm
 class BAlaS:
 	"""BUDE Alanine Scan: ddG values
 	"""
-	def __init__(self, alascan_file):
+	def __init__(self):
 		self.stable_df_bals = self.df_bals = self.df_ddg = None
 		self.positions = []
+
 
 	def bals_read(self, bals2csv_file):
 		"""Accepts .csv files converted using bals2csv.py
@@ -29,12 +30,17 @@ class BAlaS:
 		self.stable_df_bals = self.df_bals[self.df_bals['IntraDDG'] < 0]
 		print("Stable DDG values:\n", self.stable_df_bals)
 
+		return self.df_bals
+
 
 	def replot_read(self, replot_csv_file):
 		"""Accepts .csv files from replot"""
-		self.df_ddg = pandas.read_csv(replot_csv_file)
-		self.df_ddg = self.df_ddg[['ResNumber', 'ResName', 'ddGs']]
-		# print("DDG values:\n", self.df_ddg)
+		df_ddg = pandas.read_csv(replot_csv_file)
+		df_ddg = df_ddg[['ResNumber', 'ResName', 'ddGs']]
+		# print("DDG values:\n", df_ddg)
+		
+		self.df_ddg = df_ddg
+		return df_ddg
 
 
 	def replot_filter(self, threshold):
@@ -49,19 +55,26 @@ class BAlaS:
 		# print("Ascending DDG values:\n", df.sort_values('ddGs', ascending=True))
 
 		ddg_threshold = df[df['ddGs'] < threshold]
-		print("DDG values for less than threshold", threshold, ":\n",
+		print("DDG values for less than threshold", threshold, "kCal/mol:\n",
 			ddg_threshold.sort_values('ddGs', ascending=True))
+
+		self.ddg_threshold = ddg_threshold
+		return ddg_threshold
 
 
 	def replot_get_positions(self):
 		"""Get positions from filtered ddG thresholds"""
 		df_ResNumber = self.df_ddg[['ResNumber']]
-		self.positions = []
+		positions = []
 
 		for index, ResNumber in df_ResNumber.iterrows():
 			position = re.search(r'([0-9])+', str(ResNumber))
 			if position is not None: position = int(position[0])
-			self.positions.append(position)
+			positions.append(position)
+
+		print("B| Positions:", positions)
+		self.positions = positions
+		return positions
 
 
 class mutation_object:
@@ -303,19 +316,26 @@ def save_as(file, contents):
 	file.write(content)
 
 
-def format_input(contents):
-	remove_new_line = lambda s: s.replace('\n', '')
-	
-	sequence = remove_new_line(contents[0])
-	given_mutations = contents[1:]
-		
-	# Decode in the mutations format.
+def to_mut_obj(sequence, given_mutations):
+	"""Convert to mutation_object"""
+	remove_new_line = lambda s: str(s).replace('\n', '')
+
 	muts = []
 	for line in given_mutations:
 		line = remove_new_line(line)
 		mut = mutation_object(sequence, line)
 		muts.append(mut)
 
+	return muts
+
+
+def format_input(contents):
+	remove_new_line = lambda s: str(s).replace('\n', '')
+	
+	sequence = remove_new_line(contents[0])
+	given_mutations = contents[1:]
+
+	muts = to_mut_obj(sequence, given_mutations)
 	mutations_obj = mutater(sequence=sequence, mutations=muts, mutation_lock=[])
 	return mutations_obj
 
@@ -355,19 +375,21 @@ def main():
 	if args.groups:
 		muts = mutations_obj.by_groups()
 		seqs = mutations_obj.to_sequences()
-		mutations_obj.save_sequences(output_file.replace(".txt", "_allSequences.txt"))
+		mutations_obj.save_sequences(output_file.replace(".txt", "_GrpAllSeqs.txt"))
 
 
 	if args.alaninescan:
 		bude = BAlaS()
 		df_ddg = bude.replot_read(args.alaninescan)
-		ddg_preferences = bude.replot_filter(df_ddg, 1) # Threshold 1kCal/mol
-		positions = bude.get_positions(ddg_preferences)
-		# [TODO]
-		mutate = mutations(sequence)
-		mutations = mutate.by_groups()
-		sequences = mutate.to_sequences(mutations, args.mutation_count)
-		print("="*50)
+		ddg_preferences = bude.replot_filter(1) # Threshold 1kCal/mol
+		positions = bude.replot_get_positions()
+		
+		muts = to_mut_obj(sequence, positions)
+		mutations_obj = mutater(sequence=sequence, mutations=muts, mutation_lock=[])
+		
+		muts = mutations_obj.by_groups()
+		seqs = mutations_obj.to_sequences()
+		mutations_obj.save_sequences(output_file.replace(".txt", "_BAlsAllSeqs.txt"))
 
 	if args.dipeptide:
 		for seq in sequences:
@@ -388,8 +410,6 @@ def main():
 
 	print("Output sequences:", sequences)
 	print("Output sequences count:", len(sequences))
-
-	save_as(output_file.replace(".txt", "_allSequences.txt"), sequences)
 
 	try:
 		sequences = random_sampler(sequences, 'random', 5)
