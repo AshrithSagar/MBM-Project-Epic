@@ -122,15 +122,13 @@ class mutater:
 	def by_groups(self):
 		"""Returns mutation arrays based on group mutations
 		"""
-		sequence = self.sequence
-		mutation_lock = self.mutation_lock
 		groups = self.AA_GROUPS
-		print("G| Original sequence:", sequence)
+		print("G| Original sequence:", self.sequence)
 		
-		possible_mutations = list(sequence)
+		possible_mutations = list(self.sequence)
 		for mutation in self.mutations:
 			print("G| Mutation:", mutation.to_str())
-			if mutation.position in mutation_lock:
+			if mutation.position in self.mutation_lock:
 				print("G| Skipping locked position", mutation.position)
 				continue
 			if mutation.wild_type == 'P':
@@ -142,7 +140,7 @@ class mutater:
 				# Recognise the group of the mutation.
 				for types in groups.keys():
 					if mutation.wild_type in groups[types]:
-						print("G| Type:", types)
+						print("G| => Type:", types)
 						possible_muts = copy.copy(groups[types])
 						possible_muts.remove(mutation.wild_type)
 						possible_mutations[mutation.position-1] = possible_muts
