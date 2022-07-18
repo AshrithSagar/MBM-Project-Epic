@@ -125,7 +125,7 @@ class mutater:
 		groups = self.AA_GROUPS
 		print("G| Original sequence:", self.sequence)
 		
-		possible_mutations = list(self.sequence)
+		sequential_mutations = list(self.sequence)
 		for mutation in self.mutations:
 			print("G| Mutation:", mutation.to_str())
 			if mutation.position in self.mutation_lock:
@@ -135,7 +135,7 @@ class mutater:
 				print("G| Skipping Proline mutation at", mutation.position)
 				continue
 			if mutation.mutant_type:
-				possible_mutations[mutation.position-1] = [mutation.mutant_type]
+				sequential_mutations[mutation.position-1] = [mutation.mutant_type]
 			else:
 				# Recognise the group of the mutation.
 				for types in groups.keys():
@@ -143,19 +143,22 @@ class mutater:
 						print("G| => Type:", types)
 						possible_muts = copy.copy(groups[types])
 						possible_muts.remove(mutation.wild_type)
-						possible_mutations[mutation.position-1] = possible_muts
+						sequential_mutations[mutation.position-1] = possible_muts
 						break
-		self.possible_mutations = possible_mutations
-		return possible_mutations
+		self.sequential_mutations = sequential_mutations
+		return sequential_mutations
 
 
-	def to_sequences(self, count):
+	def to_sequences(self):
 		"""P&C of new_mutations. nCr approach.
-		Choose r mutation positions at a time, out of n mutations"""
-		sequences = itertools.product(*self.possible_mutations)
+		Choose r mutation positions at a time, out of n mutations.
+		Implemented using the Cartesian product."""
+		sequences = [x for x in itertools.product(*self.sequential_mutations)]
 		for sequence in sequences:
 			sequence = "".join(sequence)
 			print(sequence)
+
+		self.sequences = sequences
 		return sequences
 
 
@@ -205,7 +208,7 @@ class mutater:
 		"""Random sampling through random.
 		Chooses 5 sequences by default.
 		"""
-		new_sequences = random.sample(sequences, choose)
+		new_sequences = random.sample(self.sequences, choose)
 		return new_sequences
 
 
@@ -343,11 +346,8 @@ def main():
 		sequence, mutation_lock = format_input(mutation_lock)
 
 	if args.groups:
-		mutations = mutations_obj.by_groups()
-		sequences = mutations_obj.to_sequences(args.mutation_count)
-		exit(0)
-		# sequence, mutations = format_input(input_contents)
-		# sequences = groups_mutations(sequence, mutations)
+		muts = mutations_obj.by_groups()
+		seqs = mutations_obj.to_sequences()
 
 	if args.alaninescan:
 		bude = BAlaS()
