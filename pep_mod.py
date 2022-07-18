@@ -62,12 +62,14 @@ class BAlaS:
 		return ddg_threshold
 
 
-	def replot_get_positions(self):
+	def replot_get_positions(self, count=5):
 		"""Get positions from filtered ddG thresholds"""
-		df_ResNumber = self.ddg_threshold[['ResNumber']]
-		positions = []
+		ddg_threshold_sorted = self.ddg_threshold.sort_values('ddGs', ascending=True)
+		df_ResNumber = ddg_threshold_sorted[['ResNumber']]
+		df_ResNumber_clipped = df_ResNumber.head(count)
 
-		for index, ResNumber in df_ResNumber.iterrows():
+		positions = []
+		for index, ResNumber in df_ResNumber_clipped.iterrows():
 			position = re.search(r'([0-9])+', str(ResNumber))
 			if position is not None: position = position[0]
 			positions.append(position)
@@ -390,7 +392,7 @@ def main():
 		bude = BAlaS()
 		df_ddg = bude.replot_read(args.alaninescan)
 		ddg_preferences = bude.replot_filter(1) # Threshold in kCal/mol
-		positions = bude.replot_get_positions()
+		positions = bude.replot_get_positions(args.mutation_count)
 		
 		muts = to_mut_obj(sequence, positions)
 		mutations_obj = mutater(sequence=sequence, mutations=muts, mutation_lock=[])
