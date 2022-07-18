@@ -346,6 +346,9 @@ def main():
 	parser.add_argument('-c', '--count', type=int, dest='mutation_count', help='Number of mutations to consider at a time', default=1)
 	args = parser.parse_args()
 
+	# If --output not specified, use input_file filename.
+	output_file = args.output_file if args.output_file else args.input_file
+
 	with open(args.input_file, "r") as file:
 	    input_contents = file.readlines()
 	mutations_obj = format_input(input_contents)
@@ -384,7 +387,6 @@ def main():
 		print("="*50)
 
 	if args.dipeptide:
-		# sequences = dipeptide_matches(sequence)
 		for seq in sequences:
 			contents = [seq]
 			ddg_array = ddg_replot_read(args.dipeptide)
@@ -398,23 +400,17 @@ def main():
 			seqs = groups_mutations(seq, all_mutations)
 		sequences.extend(seqs)
 
-	# sequences = intein_matches(seqs)
-
-	# Get unique sequences.
 	get_unique = lambda seqs: list(dict.fromkeys(seqs))
 	sequences = get_unique(sequences)
 
 	print("Output sequences:", sequences)
 	print("Output sequences count:", len(sequences))
 
-	# If --output not specified, use input_file filename.
-	output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_allSequences.txt")
-	save_sequences(output_file, sequences)
+	save_as(output_file.replace(".txt", "_allSequences.txt"), sequences)
 
 	try:
 		sequences = random_sampler(sequences, 'random', 5)
-		output_file = args.output_file if args.output_file else args.input_file.replace(".txt", "_randomSequences.txt")
-		save_as(output_file, sequences)
+		save_as(output_file.replace(".txt", "_randomSequences.txt"), sequences)
 	except: pass
 
 
