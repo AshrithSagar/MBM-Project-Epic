@@ -100,7 +100,7 @@ class mutation_object:
 class mutater:
 	"""Mutater: groups, ddg, dipeptide
 	"""
-	def __init__(self, sequence, mutations=[], mutation_lock=[]):
+	def __init__(self, sequence, mutations, mutation_lock=[]):
 		self.AA_GROUPS = {
 			'polar_uncharged': ['S', 'T', 'C', 'N', 'Q'],
 			'positively_charged': ['K', 'R', 'H'],
@@ -157,7 +157,6 @@ class mutater:
 	def to_sequences(self):
 		"""P&C of new_mutations. nCr approach.
 		Choose r mutation positions at a time, out of n mutations"""
-		# sequence, mutations, count
 		permutations = itertools.permutations(mutations, count)
 
 		mutated_sequences = []
@@ -320,7 +319,7 @@ def format_input(contents):
 	
 	sequence = remove_new_line(contents[0])
 	given_mutations = contents[1:]
-	mutations_obj = mutater(sequence)
+	mutations_obj = mutater(sequence=sequence, mutations=[], mutation_lock=[])
 	
 	# Decode in the mutations format.
 	for line in given_mutations:
