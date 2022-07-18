@@ -4,6 +4,7 @@ import random
 import argparse
 import re
 import csv
+import copy
 import itertools
 import pandas
 from scipy.stats import norm
@@ -59,7 +60,7 @@ class BAlaS:
 
 		for index, ResNumber in df_ResNumber.iterrows():
 			position = re.search(r'([0-9])+', str(ResNumber))
-			position = position[0] if position is not None else position
+			if position is not None: position = int(position[0])
 			self.positions.append(position)
 
 
@@ -69,10 +70,10 @@ class mutation_object:
 	def __init__(self, sequence, mutation):
 		self.wild_type = self.position = self.mutant_type = None
 		self.sequence = sequence
-		self.store(mutation)
+		self.from_str(mutation)
 
 
-	def store(self, mutation):
+	def from_str(self, mutation):
 		position = re.search(r'([0-9])+', mutation)
 		self.position = int(position[0]) if position is not None else self.position
 
@@ -85,7 +86,7 @@ class mutation_object:
 
 
 	def new_mutant_type(self, mut_ty):
-		new_obj = self
+		new_obj = copy.copy(self)
 		new_obj.mutant_type = mut_ty
 		print("->", vars(self))
 		return new_obj
@@ -319,13 +320,15 @@ def save_as(file, contents):
 
 
 def format_input(contents):
-	sequence = contents[0].replace('\n', '')
+	remove_new_line = lambda s: s.replace('\n', '')
+	
+	sequence = remove_new_line(contents[0])
 	given_mutations = contents[1:]
 	mutations_obj = mutater(sequence)
 	
 	# Decode in the mutations format.
 	for line in given_mutations:
-		line = line.replace('\n', '') # Remove newlines.
+		line = remove_new_line(line)
 		mut = mutation_object(sequence, line)
 		mutations_obj.append_mutation(mut)
 	return mutations_obj
@@ -362,7 +365,8 @@ def main():
 
 	if args.groups:
 		mutations = mutations_obj.by_groups()
-		print(mutations)
+		for mutation in mutations:
+			print(mutation.to_str())
 		exit(0)
 		sequences = mutate.to_sequences(mutations, args.mutation_count)
 		sequence, mutations = format_input(input_contents)
