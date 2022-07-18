@@ -142,13 +142,13 @@ class mutater:
 				# Recognise the group of the mutation.
 				for types in groups.keys():
 					if mutation.wild_type in groups[types]:
-						# Self mutations are included.
 						print("G| Type:", types)
 						for AA in groups[types]:
-							# Replace the mutation with all possibilities within the group
-							new_mutation = mutation.new_mutant_type(AA)
-							new_mutations.append(new_mutation)
-							print("G| Mutating =>", new_mutation.to_str())
+							if not AA is mutation.wild_type:
+								# Replace the mutation with all possibilities within the group
+								new_mutation = mutation.new_mutant_type(AA)
+								new_mutations.append(new_mutation)
+								print("G| Mutating =>", new_mutation.to_str())
 						break
 		self.mutations = new_mutations
 		return new_mutations
@@ -158,6 +158,12 @@ class mutater:
 		"""P&C of new_mutations. nCr approach.
 		Choose r mutation positions at a time, out of n mutations"""
 		sequences = itertools.combinations(self.mutations, count)
+
+		for seqs in sequences:
+			for seq in map(mutation_object.to_str, seqs):
+				print(seq)
+			print()
+
 		return sequences
 
 
