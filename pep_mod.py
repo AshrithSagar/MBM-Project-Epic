@@ -100,7 +100,7 @@ class mutation_object:
 class mutater:
 	"""Mutater: groups, ddg, dipeptide
 	"""
-	def __init__(self, sequence, mutations, mutation_lock=[]):
+	def __init__(self, sequence, mutations=[], mutation_lock=[]):
 		self.AA_GROUPS = {
 			'polar_uncharged': ['S', 'T', 'C', 'N', 'Q'],
 			'positively_charged': ['K', 'R', 'H'],
@@ -154,30 +154,11 @@ class mutater:
 		return new_mutations
 
 
-	def to_sequences(self):
+	def to_sequences(self, count):
 		"""P&C of new_mutations. nCr approach.
 		Choose r mutation positions at a time, out of n mutations"""
-		permutations = itertools.permutations(mutations, count)
-
-		mutated_sequences = []
-		for mutation_tuple in permutations:
-			print("S: Mutations:", mutation_tuple)
-			for mutation in mutation_tuple:
-				replacement = {
-					'wild_type': re.search(r'^([A-Za-z])', mutation),
-					'position': re.search(r'([0-9])+', mutation),
-					'mutant_type': re.search(r'([A-Za-z])$', mutation)
-				}
-
-				for key in replacement.keys():
-					element = replacement[key]
-					replacement[key] = element[0] if element is not None else element
-
-				position = int(replacement['position'])
-				new_sequence = sequence[:position-1] + replacement['mutant_type'] + sequence[position:]
-				mutated_sequences.append(new_sequence)
-
-		return mutated_sequences
+		sequences = itertools.combinations(self.mutations, count)
+		return sequences
 
 
 	def by_intein_sequences(self):
@@ -365,12 +346,10 @@ def main():
 
 	if args.groups:
 		mutations = mutations_obj.by_groups()
-		for mutation in mutations:
-			print(mutation.to_str())
+		sequences = mutations_obj.to_sequences(args.mutation_count)
 		exit(0)
-		sequences = mutate.to_sequences(mutations, args.mutation_count)
-		sequence, mutations = format_input(input_contents)
-		sequences = groups_mutations(sequence, mutations)
+		# sequence, mutations = format_input(input_contents)
+		# sequences = groups_mutations(sequence, mutations)
 
 	if args.alaninescan:
 		bude = BAlaS()
