@@ -126,8 +126,8 @@ class mutater:
 		mutation_lock = self.mutation_lock
 		groups = self.AA_GROUPS
 		print("G| Original sequence:", sequence)
-			
-		new_mutations = []
+		
+		possible_mutations = list(sequence)
 		for mutation in self.mutations:
 			print("G| Mutation:", mutation.to_str())
 			if mutation.position in mutation_lock:
@@ -137,33 +137,27 @@ class mutater:
 				print("G| Skipping Proline mutation at", mutation.position)
 				continue
 			if mutation.mutant_type:
-				new_mutations.append(mutation)
+				possible_mutations[mutation.position-1] = [mutation.mutant_type]
 			else:
 				# Recognise the group of the mutation.
 				for types in groups.keys():
 					if mutation.wild_type in groups[types]:
 						print("G| Type:", types)
-						for AA in groups[types]:
-							if not AA is mutation.wild_type:
-								# Replace the mutation with all possibilities within the group
-								new_mutation = mutation.new_mutant_type(AA)
-								new_mutations.append(new_mutation)
-								print("G| Mutating =>", new_mutation.to_str())
+						possible_muts = copy.copy(groups[types])
+						possible_muts.remove(mutation.wild_type)
+						possible_mutations[mutation.position-1] = possible_muts
 						break
-		self.mutations = new_mutations
-		return new_mutations
+		self.possible_mutations = possible_mutations
+		return possible_mutations
 
 
 	def to_sequences(self, count):
 		"""P&C of new_mutations. nCr approach.
 		Choose r mutation positions at a time, out of n mutations"""
-		sequences = itertools.combinations(self.mutations, count)
-
-		for seqs in sequences:
-			for seq in map(mutation_object.to_str, seqs):
-				print(seq)
-			print()
-
+		sequences = itertools.product(*self.possible_mutations)
+		for sequence in sequences:
+			sequence = "".join(sequence)
+			print(sequence)
 		return sequences
 
 
