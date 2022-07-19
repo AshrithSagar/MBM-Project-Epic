@@ -199,10 +199,11 @@ class mutater:
 		check_dipeptide = lambda seq: re.search(r"(.)\1", str(seq))
 		get_all_dipeptides = lambda seq: re.finditer(r"(.)\1", seq)
 
-		for sequence in map("".join, self.sequences):
-			for match in map(check_dipeptide, [sequence]):
-				if not match:
-					print(sequence)
+		sequences = itertools.filterfalse(check_dipeptide, map("".join, self.sequences))
+		print("S| Removed dipeptides from sequences")
+
+		self.sequences = sequences
+		return sequences
 
 
 	def by_intein_sequences(self):
@@ -416,6 +417,7 @@ def main():
 
 	if args.dipeptide:
 		mutations_obj.remove_dipeptides()
+		mutations_obj.save_sequences(output_file.replace(".txt", "_BAlsAllSeqsDiPep.txt"))
 
 	get_unique = lambda seqs: list(dict.fromkeys(seqs))
 	sequences = get_unique(sequences)
