@@ -44,29 +44,23 @@ class BAlaS:
 		return df_ddg
 
 
-	def replot_filter(self, threshold):
+	def replot_filter(self, mutation_lock=[]):
 		"""Filter out based on ddG thresholds"""
 		df = self.df_ddg
-		# ddg_pos = df[df['ddGs'] > 0]
-		# print("Positive DDG values:\n", ddg_pos.sort_values('ddGs', ascending=False))
-
-		# ddg_neg = df[df['ddGs'] < 0]
-		# print("Negative DDG values:\n", ddg_neg.sort_values('ddGs', ascending=True))
-
-		# print("Ascending DDG values:\n", df.sort_values('ddGs', ascending=True))
-
-		ddg_threshold = df[df['ddGs'] < threshold]
-		print("DDG values for less than threshold", threshold, "kCal/mol:\n",
-			ddg_threshold.sort_values('ddGs', ascending=True))
-
-		self.ddg_threshold = ddg_threshold
-		return ddg_threshold
+		df_remove_lock = df
+		# .filter(like=)
+		# print(df_remove_lock)
+		print("="*50)
+		self.df_filtered = df_remove_lock
+		print("Filtered ddG thresholds:\n",
+			df_remove_lock.sort_values('ddGs', ascending=True))
+		return df_remove_lock
 
 
-	def replot_get_positions(self, count=5, mutation_lock=[]):
+	def replot_get_positions(self, count=5):
 		"""Get positions from filtered ddG thresholds"""
-		ddg_threshold_sorted = self.ddg_threshold.sort_values('ddGs', ascending=True)
-		df_ResNumber = ddg_threshold_sorted[['ResNumber']]
+		df_remove_lock_sorted = self.df_filtered.sort_values('ddGs', ascending=False)
+		df_ResNumber = df_remove_lock_sorted[['ResNumber']]
 		df_ResNumber_clipped = df_ResNumber.head(count)
 
 		positions = []
@@ -407,8 +401,8 @@ def main():
 	if args.alaninescan:
 		bude = BAlaS()
 		df_ddg = bude.replot_read(args.alaninescan)
-		ddg_preferences = bude.replot_filter(1) # Threshold in kCal/mol
-		positions = bude.replot_get_positions(args.mutation_count, mutations_obj.mutation_lock)
+		ddg_preferences = bude.replot_filter(mutations_obj.mutation_lock)
+		positions = bude.replot_get_positions(args.mutation_count)
 
 		muts = to_mut_obj(sequence, positions)
 		mutations_obj = mutater(sequence=sequence, mutations=muts, mutation_lock=[])
