@@ -6,6 +6,7 @@ import re
 import csv
 import copy
 import itertools
+import cardinality
 import pandas
 from scipy.stats import norm
 
@@ -170,8 +171,10 @@ class mutater:
 		Implemented using the Cartesian product."""
 		try:
 			sequences = [x for x in itertools.product(*self.sequential_mutations)]
+			self.sequences_consumable = False
 		except:
 			sequences = itertools.product(*self.sequential_mutations)
+			self.sequences_consumable = True
 		print("S| Converted mutations to sequences format")
 
 		self.sequences = sequences
@@ -416,14 +419,15 @@ def main():
 		mutations_obj.save_sequences(output_file.replace(".txt", "_BAlsAllSeqs.txt"))
 
 	if args.dipeptide:
-		mutations_obj.remove_dipeptides()
+		seqs = mutations_obj.remove_dipeptides()
 		mutations_obj.save_sequences(output_file.replace(".txt", "_BAlsAllSeqsDiPep.txt"))
 
 	get_unique = lambda seqs: list(dict.fromkeys(seqs))
 	sequences = get_unique(sequences)
 
-	print("Output sequences:", sequences)
-	print("Output sequences count:", len(sequences))
+	print("Output sequences:")
+	mutations_obj.show_sequences()
+	print("Output sequences count:", cardinality.count(mutations_obj.sequences))
 
 	try:
 		sequences = random_sampler(sequences, 'random', 5)
