@@ -261,14 +261,15 @@ class mutater:
 		"""Random sampling through random.
 		Chooses 5 sequences by default.
 		"""
-		sequences = []
+		seqs = []
 		for seq in map("".join, self.sequences):
-			sequences.append(seq)
-		seqs = random.sample(sequences, choose)
+			seqs.append(seq)
+		sequences = random.sample(seqs, choose)
 
 		print("S| Sampled", choose, "sequences")
 		
-		return seqs
+		self.sequences = sequences
+		return sequences
 
 
 	def monte_carlo_sampler(self, choose=5):
