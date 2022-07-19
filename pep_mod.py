@@ -38,7 +38,7 @@ class BAlaS:
 		df_ddg = pandas.read_csv(replot_csv_file)
 		df_ddg = df_ddg[['ResNumber', 'ResName', 'ddGs']]
 		# print("DDG values:\n", df_ddg)
-		
+
 		self.df_ddg = df_ddg
 		return df_ddg
 
@@ -139,7 +139,7 @@ class mutater:
 		"""
 		groups = self.AA_GROUPS
 		print("G| Original sequence:", self.sequence)
-		
+
 		sequential_mutations = list(self.sequence)
 		for mutation in self.mutations:
 			print("G| Mutation:", mutation.to_str())
@@ -192,6 +192,17 @@ class mutater:
 		        line = "".join(sequence)
 		        f.write(f"{line}\n")
 		print("S| Saved sequences to", file)
+
+
+	def remove_dipeptides(self):
+		"""Remove dipeptides from self.sequences"""
+		check_dipeptide = lambda seq: re.search(r"(.)\1", str(seq))
+		get_all_dipeptides = lambda seq: re.finditer(r"(.)\1", seq)
+
+		for sequence in map("".join, self.sequences):
+			for match in map(check_dipeptide, [sequence]):
+				if not match:
+					print(sequence)
 
 
 	def by_intein_sequences(self):
@@ -343,7 +354,7 @@ def to_mut_obj(sequence, given_mutations):
 
 def format_input(contents):
 	remove_new_line = lambda s: str(s).replace('\n', '')
-	
+
 	sequence = remove_new_line(contents[0])
 	given_mutations = contents[1:]
 
@@ -357,7 +368,7 @@ def main():
 	parser = argparse.ArgumentParser(prog='pep_mod', description='Peptide modifications generator')
 	parser.add_argument('input_file', type=str, help='Input file [.txt]')
 	parser.add_argument('-o', '--output', dest='output_file', type=str, help='Output filename')
-	parser.add_argument('-d', '--dipeptide', action='store', help='Dipeptides match')
+	parser.add_argument('-d', '--dipeptide', action='store_true', help='Dipeptides match')
 	parser.add_argument('-g', '--groups', action='store_true', help='Groups filter')
 	parser.add_argument('-a', '--alaninescan', help='Alanine scan DDG results from BUDE Alanine scan')
 	parser.add_argument('-l', '--lock', type=str, dest='mutation_lock', help='Mutation lock positions')
@@ -395,27 +406,16 @@ def main():
 		df_ddg = bude.replot_read(args.alaninescan)
 		ddg_preferences = bude.replot_filter(1) # Threshold in kCal/mol
 		positions = bude.replot_get_positions(args.mutation_count)
-		
+
 		muts = to_mut_obj(sequence, positions)
 		mutations_obj = mutater(sequence=sequence, mutations=muts, mutation_lock=[])
-		
+
 		muts = mutations_obj.by_groups()
 		seqs = mutations_obj.to_sequences()
 		mutations_obj.save_sequences(output_file.replace(".txt", "_BAlsAllSeqs.txt"))
 
 	if args.dipeptide:
-		for seq in sequences:
-			contents = [seq]
-			ddg_array = ddg_replot_read(args.dipeptide)
-			matches = re.finditer(r"(.)\1", str(seq)) # Find all dipeptides.
-			for match in matches:
-				print(match)
-				mutations = dipeptide_mutater(seq, match, ddg_array)
-				contents.extend(mutations)
-			print(contents)
-			seq, all_mutations = format_input(contents)
-			seqs = groups_mutations(seq, all_mutations)
-		sequences.extend(seqs)
+		mutations_obj.remove_dipeptides()
 
 	get_unique = lambda seqs: list(dict.fromkeys(seqs))
 	sequences = get_unique(sequences)
