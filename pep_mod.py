@@ -63,7 +63,7 @@ class BAlaS:
 		return ddg_threshold
 
 
-	def replot_get_positions(self, count=5):
+	def replot_get_positions(self, count=5, mutation_lock=[]):
 		"""Get positions from filtered ddG thresholds"""
 		ddg_threshold_sorted = self.ddg_threshold.sort_values('ddGs', ascending=True)
 		df_ResNumber = ddg_threshold_sorted[['ResNumber']]
@@ -391,13 +391,12 @@ def main():
 	if args.mutation_lock:
 		with open(args.mutation_lock, "r") as file:
 			lock_contents = file.readlines()
-		global mutation_lock
-		mutation_lock = [sequence]
+		mutation_lock = []
 		for line in lock_contents:
 			content = line.replace('\n', '') # Remove newlines.
 			mutation_lock.append(content)
-		print("Locked mutation positions:", mutation_lock[1:])
-		sequence, mutation_lock = format_input(mutation_lock)
+		mutations_obj.mutation_lock = mutation_lock.sort(key=lambda x: int(x))
+		print("Locked mutation positions:", mutation_lock)
 
 	if args.groups:
 		muts = mutations_obj.by_groups()
@@ -409,7 +408,7 @@ def main():
 		bude = BAlaS()
 		df_ddg = bude.replot_read(args.alaninescan)
 		ddg_preferences = bude.replot_filter(1) # Threshold in kCal/mol
-		positions = bude.replot_get_positions(args.mutation_count)
+		positions = bude.replot_get_positions(args.mutation_count, mutations_obj.mutation_lock)
 
 		muts = to_mut_obj(sequence, positions)
 		mutations_obj = mutater(sequence=sequence, mutations=muts, mutation_lock=[])
@@ -425,8 +424,8 @@ def main():
 	get_unique = lambda seqs: list(dict.fromkeys(seqs))
 	sequences = get_unique(sequences)
 
-	print("Output sequences:")
-	mutations_obj.show_sequences()
+	# print("Output sequences:")
+	# mutations_obj.show_sequences()
 	print("Output sequences count:", cardinality.count(mutations_obj.sequences))
 
 	try:
