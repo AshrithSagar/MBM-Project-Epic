@@ -44,23 +44,30 @@ class BAlaS:
 		return df_ddg
 
 
-	def replot_filter(self, mutation_lock=[]):
+	def replot_filter(self, threshold):
 		"""Filter out based on ddG thresholds"""
 		df = self.df_ddg
-		df_remove_lock = df
-		# .filter(like=)
-		# print(df_remove_lock)
-		print("="*50)
-		self.df_filtered = df_remove_lock
-		print("Filtered ddG thresholds:\n",
-			df_remove_lock.sort_values('ddGs', ascending=True))
-		return df_remove_lock
+		# ddg_pos = df[df['ddGs'] > 0]
+		# print("Positive DDG values:\n", ddg_pos.sort_values('ddGs', ascending=False))
+
+		# ddg_neg = df[df['ddGs'] < 0]
+		# print("Negative DDG values:\n", ddg_neg.sort_values('ddGs', ascending=True))
+
+		# print("Ascending DDG values:\n", df.sort_values('ddGs', ascending=True))
+
+		df = df[df['ddGs'] > 0]
+		ddg_threshold = df[df['ddGs'] < threshold]
+		print("DDG values for less than threshold", threshold, "kCal/mol:\n",
+			ddg_threshold.sort_values('ddGs', ascending=True))
+
+		self.ddg_threshold = ddg_threshold
+		return ddg_threshold
 
 
-	def replot_get_positions(self, count=5):
+	def replot_get_positions(self, count=5, mutation_lock=[]):
 		"""Get positions from filtered ddG thresholds"""
-		df_remove_lock_sorted = self.df_filtered.sort_values('ddGs', ascending=False)
-		df_ResNumber = df_remove_lock_sorted[['ResNumber']]
+		ddg_threshold_sorted = self.ddg_threshold.sort_values('ddGs', ascending=True)
+		df_ResNumber = ddg_threshold_sorted[['ResNumber']]
 		df_ResNumber_clipped = df_ResNumber.head(count)
 
 		positions = []
@@ -196,7 +203,12 @@ class mutater:
 		check_dipeptide = lambda seq: re.search(r"(.)\1", str(seq))
 		get_all_dipeptides = lambda seq: re.finditer(r"(.)\1", seq)
 
-		sequences = itertools.filterfalse(check_dipeptide, map("".join, self.sequences))
+		try:
+			sequences = [x for x in itertools.filterfalse(check_dipeptide, map("".join, self.sequences))]
+			self.sequences_consumable = False
+		except:
+			sequences = itertools.filterfalse(check_dipeptide, map("".join, self.sequences))
+			self.sequences_consumable = True
 		print("S| Removed dipeptides from sequences")
 
 		self.sequences = sequences
@@ -249,8 +261,14 @@ class mutater:
 		"""Random sampling through random.
 		Chooses 5 sequences by default.
 		"""
-		new_sequences = random.sample(self.sequences, choose)
-		return new_sequences
+		sequences = []
+		for seq in map("".join, self.sequences):
+			sequences.append(seq)
+		seqs = random.sample(sequences, choose)
+
+		print("S| Sampled", choose, "sequences")
+		
+		return seqs
 
 
 	def monte_carlo_sampler(self, choose=5):
@@ -401,8 +419,8 @@ def main():
 	if args.alaninescan:
 		bude = BAlaS()
 		df_ddg = bude.replot_read(args.alaninescan)
-		ddg_preferences = bude.replot_filter(mutations_obj.mutation_lock)
-		positions = bude.replot_get_positions(args.mutation_count)
+		ddg_preferences = bude.replot_filter(1)
+		positions = bude.replot_get_positions(args.mutation_count, mutations_obj.mutation_lock)
 
 		muts = to_mut_obj(sequence, positions)
 		mutations_obj = mutater(sequence=sequence, mutations=muts, mutation_lock=[])
@@ -413,19 +431,17 @@ def main():
 
 	if args.dipeptide:
 		seqs = mutations_obj.remove_dipeptides()
-		mutations_obj.save_sequences(output_file.replace(".txt", "_BAlsAllSeqsDiPep.txt"))
+		mutations_obj.save_sequences(output_file.replace(".txt", "_SeqsDiPep.txt"))
 
-	get_unique = lambda seqs: list(dict.fromkeys(seqs))
-	sequences = get_unique(sequences)
+	# get_unique = lambda seqs: list(dict.fromkeys(seqs))
+	# sequences = get_unique(sequences)
 
 	# print("Output sequences:")
 	# mutations_obj.show_sequences()
-	print("Output sequences count:", cardinality.count(mutations_obj.sequences))
+	# print("Output sequences count:", cardinality.count(mutations_obj.sequences))
 
-	try:
-		sequences = random_sampler(sequences, 'random', 5)
-		save_as(output_file.replace(".txt", "_randomSequences.txt"), sequences)
-	except: pass
+	seqs = mutations_obj.random_sampler(5)
+	mutations_obj.save_sequences(output_file.replace(".txt", "_SeqsRndm.txt"))
 
 
 if __name__ == "__main__":
