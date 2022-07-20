@@ -48,7 +48,7 @@ class BAlaS:
         """Filter out based on ddG thresholds"""
         # Remove mutation_lock positions.
         df_ddg = self.df_ddg
-        drop_positions = [int(x)-1 for x in mutation_lock if True]
+        drop_positions = [int(x)-1 for x in mutation_lock]
         df_unlocked = df_ddg.drop(drop_positions)
 
         df_lower = df_unlocked[df_unlocked['ddGs'] > lower_threshold]
@@ -88,34 +88,41 @@ class MutationObject:
 
 
     def from_str(self, mutation):
+        """Convert mutation in string format to MutationObject.
+        """
         position = re.search(r'([0-9])+', mutation)
         self.position = int(position[0]) if position is not None else self.position
 
         wild_type = re.search(r'^([A-Za-z])', mutation)
         self.wild_type = wild_type[0] if wild_type is not None else self.wild_type
-        if self.wild_type is None: self.wild_type = self.sequence[self.position-1]
+        if self.wild_type is None:
+            self.wild_type = self.sequence[self.position-1]
 
         mutant_type = re.search(r'([A-Za-z])$', mutation)
         self.mutant_type = mutant_type[0] if mutant_type is not None else self.mutant_type
 
 
     def new_mutant_type(self, mut_ty):
+        """Create a new MutationObject with a differnt mutant_type attribute.
+        """
         new_obj = copy.copy(self)
         new_obj.mutant_type = mut_ty
         return new_obj
 
 
     def to_str(self):
+        """Convert MutationObject to string format.
+        """
         mutant_type = self.mutant_type if self.mutant_type else ''
         mut_str = self.wild_type + str(self.position) + mutant_type
         return mut_str
 
 
-class mutater:
+class Mutater:
     """Mutater: groups, ddg, dipeptide
     """
-    def __init__(self, sequence, mutations=[], mutation_lock=[]):
-        self.AA_GROUPS = {
+    def __init__(self, sequence, mutations=None, mutation_lock=None):
+        self.groups = {
             'polar_uncharged': ['S', 'T', 'C', 'N', 'Q'],
             'positively_charged': ['K', 'R', 'H'],
             'negatively_charged': ['D', 'E'],
@@ -125,6 +132,8 @@ class mutater:
         self.sequence = sequence
         self.mutations = mutations
         self.mutation_lock = mutation_lock
+        self.sequential_mutations = self.sequences_consumable = None
+        self.sequences = None
 
 
     def append_mutation(self, mut_obj):
@@ -136,7 +145,7 @@ class mutater:
     def by_groups(self):
         """Returns mutation arrays based on group mutations
         """
-        groups = self.AA_GROUPS
+        groups = self.groups
         print("G| Original sequence:", self.sequence)
 
         sequential_mutations = list(self.sequence)
@@ -152,10 +161,10 @@ class mutater:
                 sequential_mutations[mutation.position-1] = [mutation.mutant_type]
             else:
                 # Recognise the group of the mutation.
-                for types in groups.keys():
-                    if mutation.wild_type in groups[types]:
-                        print("G| => Type:", types)
-                        possible_muts = copy.copy(groups[types])
+                for group_type, group in groups.items():
+                    if mutation.wild_type in group_type:
+                        print("G| => Type:", group_type)
+                        possible_muts = copy.copy(group)
                         possible_muts.remove(mutation.wild_type)
                         sequential_mutations[mutation.position-1] = possible_muts
                         break
@@ -168,15 +177,15 @@ class mutater:
         Choose r mutation positions at a time, out of n mutations.
         Implemented using the Cartesian product."""
         try:
-            sequences = [x for x in itertools.product(*self.sequential_mutations)]
+            seqs = [x for x in itertools.product(*self.sequential_mutations)]
             self.sequences_consumable = False
-        except:
-            sequences = itertools.product(*self.sequential_mutations)
+        except: # pylint: disable=bare-except
+            seqs = itertools.product(*self.sequential_mutations)
             self.sequences_consumable = True
         print("S| Converted mutations to sequences format")
 
-        self.sequences = sequences
-        return sequences
+        self.sequences = seqs
+        return seqs
 
 
     def show_sequences(self):
@@ -188,10 +197,10 @@ class mutater:
 
     def save_sequences(self, file):
         """Save self.sequences to a file"""
-        with open(file, "w") as f:
+        with open(file, "w", encoding='utf8') as opened_file:
             for sequence in self.sequences:
                 line = "".join(sequence)
-                f.write(f"{line}\n")
+                opened_file.write(f"{line}\n")
         print("S| Saved sequences to", file)
 
 
@@ -303,7 +312,7 @@ class sequences:
 
     def dipeptide_mutater(self, sequence, dipeptide, ddg):
         """Mutates to remove dipeptides."""
-        AA_GROUPS = {
+        groups = {
             'polar_uncharged': ['S', 'T', 'C', 'P', 'N', 'Q'],
             'positively_charged': ['K', 'R', 'H'],
             'negatively_charged': ['D', 'E'],
@@ -331,9 +340,9 @@ class sequences:
                 print("DP: Skipping locked position", mutation['position'])
                 continue
             # Recognise the group of the mutation.
-            for types in AA_GROUPS.keys():
-                if mutation['wild_type'] in AA_GROUPS[types]:
-                    for AA in AA_GROUPS[types]:
+            for types in groups.keys():
+                if mutation['wild_type'] in groups[types]:
+                    for AA in groups[types]:
                         position = int(mutation['position'])
                         if (AA == sequence[position-2])|(AA == sequence[position]):
                             print("Discarding mutation of", mutation['wild_type'],
@@ -373,7 +382,7 @@ def format_input(contents):
     given_mutations = contents[1:]
 
     muts = to_mut_obj(sequence, given_mutations)
-    mutations_obj = mutater(sequence=sequence, mutations=muts, mutation_lock=[])
+    mutations_obj = Mutater(sequence=sequence, mutations=muts, mutation_lock=[])
     return mutations_obj
 
 
@@ -421,7 +430,7 @@ def main():
         positions = bude.replot_get_positions(args.mutation_count)
 
         muts = to_mut_obj(sequence, positions)
-        mutations_obj = mutater(sequence=sequence, mutations=muts, mutation_lock=[])
+        mutations_obj = Mutater(sequence=sequence, mutations=muts, mutation_lock=[])
 
         muts = mutations_obj.by_groups()
         seqs = mutations_obj.to_sequences()
