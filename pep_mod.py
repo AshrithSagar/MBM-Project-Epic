@@ -210,27 +210,25 @@ class Mutater:
         get_all_dipeptides = lambda seq: re.finditer(r"(.)\1", seq)
 
         try:
-            sequences = [x for x in itertools.filterfalse(check_dipeptide, map("".join, self.sequences))]
+            seqs = [x for x in itertools.filterfalse(check_dipeptide, map("".join, self.sequences))]
             self.sequences_consumable = False
-        except:
-            sequences = itertools.filterfalse(check_dipeptide, map("".join, self.sequences))
+        except: # pylint: disable=bare-except
+            seqs = itertools.filterfalse(check_dipeptide, map("".join, self.sequences))
             self.sequences_consumable = True
         print("S| Removed dipeptides from sequences")
 
-        self.sequences = sequences
+        self.sequences = seqs
         return sequences
 
 
     def by_intein_sequences(self):
         """[SKIPPED]
         """
-        pass
 
 
     def by_cleavage_sites(self):
         """[SKIPPED]
         """
-        pass
         # def intein_matches(sequence):
         # inteins = ["CRAZY_SEQUENCE", "ANOTHER_SEQUENCE"]
         # # Put the source as a dictionary or an array, preferably.
@@ -244,13 +242,11 @@ class Mutater:
     def by_charge_criterion(self):
         """[SKIPPED]
         """
-        pass
 
 
     def randomise(self):
         """At random positions
         """
-        pass
         # [TODO]
         # for mutation_position in range(len(sequence)):
         #   sequences = groups_mutations(sequence, [str(mutation_position)])
@@ -270,11 +266,15 @@ class Mutater:
         seqs = []
         for seq in map("".join, self.sequences):
             seqs.append(seq)
-        sequences = random.sample(seqs, choose)
 
-        print("S| Sampled", choose, "sequences")
-        
-        self.sequences = sequences
+        try:
+            seqs = random.sample(seqs, choose)
+            print("S| Sampled", choose, "sequences")
+        except: # pylint: disable=bare-except
+            pass
+
+
+        self.sequences = seqs
         return sequences
 
 
@@ -284,6 +284,7 @@ class Mutater:
         Chooses 5 sequences by default.
         """
         new_sequences = []
+        print("S| Choosing", choose)
         # mean, var, skew, kurt = norm.stats(moments='mvsk')
         # [TODO]
         return new_sequences
